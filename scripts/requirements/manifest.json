@@ -1,0 +1,59 @@
+{
+    "version": "0.0.1",
+    "source-code": [],
+    "third-party": [
+        {
+            "name": "kconfiglib",
+            "type": "repo",
+            "url": "https://github.com/ulfalizer/Kconfiglib",
+            "ref": "061e71f7d78cb057762d88de088055361863deff",
+            "path": "../modules/kconfiglib"
+        },
+        {
+            "name": "openocd-0.12.0-3",
+            "type": "executable",
+            "path": "../modules/debug/openocd-0.12.0-3",
+            "parent_dirs": true,
+            "os": {
+                "linux": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-linux-x64.tar.gz"},
+                "win32": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-win32-x64.zip"},
+                "cygwin": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-win32-x64.zip"}
+            }
+        },
+        {
+            "name": "ninja",
+            "type": "executable",
+            "path": "../modules/ninja",
+            "os":
+            {
+                "linux": {"url": "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip"},
+                "win32": {"url": "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip"},
+                "cygwin": {"url": "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip"}
+            }
+        },
+        {
+            "name": "renode",
+            "type": "executable",
+            "path": "../modules/debug/renode",
+            "parent_dirs": true,
+            "os": {
+                "linux": {"url": "https://builds.renode.io/renode-1.15.0+20240327git759411b1b.linux-portable.tar.gz"},
+                "win32": {"url": "https://builds.renode.io/renode_1.15.0+20240327git759411b1b.zip"},
+                "cygwin": {"url": "https://builds.renode.io/renode_1.15.0+20240327git759411b1b.zip"}
+            }
+        }
+    ],
+    "toolchains": [
+        {
+            "name": "xpack-toolchain-13.2.0-2",
+            "type": "toolchain",
+            "parent_dirs": true,
+            "path": "../xpack-riscv-none-elf-gcc-13.2.0-2",
+            "os": {
+                "linux": {"url": "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz"},
+                "win32": {"url": "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-win32-x64.zip"},
+                "cygwin": {"url": "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-win32-x64.zip"}
+            }
+        }
+    ]
+}
