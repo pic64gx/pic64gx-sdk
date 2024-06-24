@@ -1,0 +1,37 @@
+{
+    "name": "",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "",
+    "cwd": "${workspaceFolder}",
+    "MIMode": "gdb",
+    "linux": {
+        "miDebuggerPath":"${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
+        "debugServerPath":"${workspaceFolder}/modules/debug/renode/renode"
+    },
+    "windows": {
+        "miDebuggerPath":"${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
+        "debugServerPath":"${workspaceFolder}/modules/debug/renode/bin/Renode.exe"
+    },
+    "miDebuggerArgs": "-se ${PATH_TO_IMAGE}",
+    "debugServerArgs":" -e \"$GDB_SERVER_PORT=3333; path add @../../../boards/renode; i @scripts/${TARGET_BOARD}.resc\"",
+    "filterStdout": true,
+    
+    "serverStarted": "Renode has been started successfully and is ready for a gdb connection.",
+    "serverLaunchTimeout": 60000,
+    "launchCompleteCommand": "None",
+
+    "setupCommands": [
+        { "text": "target remote localhost:3333"},
+        { "text": "load"},
+        { "text": "monitor pause"},
+        { "text": "monitor showAnalyzer sysbus.uart"},
+        { "text": "monitor showAnalyzer sysbus.mmuart0"},
+        { "text": "monitor showAnalyzer sysbus.mmuart1"},
+        { "text": "monitor showAnalyzer sysbus.mmuart2"},
+        { "text": "monitor showAnalyzer sysbus.mmuart3"},
+        { "text": "monitor sysbus LoadELF @${PATH_TO_IMAGE}"},
+        { "text": "thread apply all set $pc=_start"},
+        { "text": "monitor start"}
+    ]
+}

@@ -1,0 +1,146 @@
+{
+    "configurations": [
+        {
+            "name": "debug-PIC64GX",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/${input:path_to_image}",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "linux": {
+                "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd"
+            },
+            "windows": {
+                "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd.exe"
+            },
+            "miDebuggerArgs": "-se ${workspaceFolder}/${input:path_to_image}",
+            "debugServerArgs": "--command \"set DEVICE MPFS\" --file board/${input:debugger_config}.cfg",
+            "filterStderr": true,
+
+            "serverStarted": "Info : Listening on port 3333 for gdb connections",
+            "serverLaunchTimeout": 10000,
+            "launchCompleteCommand": "None",
+
+            "setupCommands": [
+                {"text": "handle SIGTRAP nostop"},
+                {"text": "set mem inaccessible-by-default off"},
+                {"text": "set $target_riscv=1"},
+                {"text": "set architecture riscv:rv64"},
+                {"text": "target remote localhost:3333"},
+                {"text": "load"},
+                {"text": "monitor reset halt"},
+                {"text": "thread apply all set $pc=_start"}
+            ],
+            "logging": {
+                "moduleLoad": false,
+                "programOutput": false,
+                "engineLogging": true,
+                "trace": false
+            }
+        },
+        {
+            "name": "debug-renode",
+            "type": "cppdbg",
+            "request": "launch",
+            "MIMode": "gdb",
+            "linux": {
+                "miDebuggerPath":"${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
+                "debugServerPath":"${workspaceFolder}/modules/debug/renode/renode"
+            },
+            "windows": {
+                "miDebuggerPath":"${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
+                "debugServerPath":"${workspaceFolder}/modules/debug/renode/bin/Renode.exe"
+            },
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/${input:path_to_image}",
+            "debugServerArgs":" -e \"$GDB_SERVER_PORT=3333; path add @../../../boards/renode; i @scripts/${input:target_board}.resc\"",
+            "filterStdout": true,
+            "serverStarted": "Renode has been started successfully and is ready for a gdb connection.",
+            "serverLaunchTimeout": 10000,
+            "launchCompleteCommand": "None",
+
+            "miDebuggerArgs": "-se ${workspaceFolder}/${input:path_to_image}",
+            "setupCommands": [
+                { "text": "target remote localhost:3333"},
+                { "text": "load"},
+                { "text": "monitor pause"},
+                { "text": "monitor showAnalyzer sysbus.uart"},
+                { "text": "monitor showAnalyzer sysbus.mmuart0"},
+                { "text": "monitor showAnalyzer sysbus.mmuart1"},
+                { "text": "monitor showAnalyzer sysbus.mmuart2"},
+                { "text": "monitor showAnalyzer sysbus.mmuart3"},
+                { "text": "monitor sysbus LoadELF @${input:path_to_image}"},
+                { "text": "thread apply all set $pc=_start"},
+                { "text": "monitor start"}
+            ],
+            "logging": {
+                "moduleLoad": true,
+                "programOutput": true,
+                "engineLogging": true,
+                "trace": true
+            }
+        },
+        {
+            "name": "load-hss",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/${input:path_to_image}",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "linux": {
+                "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd"
+            },
+            "windows": {
+                "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd.exe"
+            },
+            "miDebuggerArgs": "-se ${workspaceFolder}/${input:path_to_image}",
+            "debugServerArgs": "--command \"set DEVICE PIC64GX\" -f board/microchip_riscv_efp5.cfg",
+            "filterStderr": true,
+
+            "serverStarted": "Info : Listening on port 3333 for gdb connections",
+            "serverLaunchTimeout": 1000,
+            "launchCompleteCommand": "None",
+
+            "setupCommands": [
+                {"text": "target remote :3333"},
+                {"text": "monitor reset halt"},
+                {"text": "load"},
+            ],
+            "logging": {
+                "moduleLoad": true,
+                "programOutput": true,
+                "engineLogging": true,
+                "trace": true
+            },
+        },
+    ],
+    "inputs": [
+        {
+            "id": "path_to_image",
+            "type": "promptString",
+            "description": "path to the *.elf file relative to the workspace, ex: build/*.elf"
+        },
+        {
+            "id": "target_board",
+            "type": "pickString",
+            "options": [
+                "curiosity-pic64-GX"
+            ],
+            "default": "curiosity-pic64-GX",
+            "description": "Target board for Renode emulation"
+        },
+        {
+            "id": "debugger_config",
+            "type": "pickString",
+            "options": [
+                "microchip_riscv_efp5"
+            ],
+            "default": "microchip_riscv_efp5",
+            "description": "Debug probe "
+        }
+    ]
+}

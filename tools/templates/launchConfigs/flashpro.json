@@ -1,0 +1,31 @@
+{
+    "name": "",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "",
+    "cwd": "${workspaceFolder}",
+    "MIMode": "gdb",
+    "linux": {
+        "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
+        "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd"
+    },
+    "windows": {
+        "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
+        "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd.exe"
+    },
+    "miDebuggerArgs": "",
+    "debugServerArgs": "",
+    "filterStderr": true,
+
+    "serverStarted": "Info : Listening on port 3333 for gdb connections",
+    "serverLaunchTimeout": 10000,
+    "launchCompleteCommand": "None",
+
+    "setupCommands": [],
+    "logging": {
+        "moduleLoad": false,
+        "programOutput": false,
+        "engineLogging": true,
+        "trace": false
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "version": 7,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 20,
+      "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Default Config",
+            "description": "",
+            "generator": "Ninja",
+            "toolchainFile": "$penv{SDK_BASE}/cmake/cross-compiler-gcc-tc.cmake",
+            "cacheVariables": {
+                "CMAKE_MODULE_PATH": "$penv{SDK_BASE}/cmake",
+                "SDK_BASE": "$penv{SDK_BASE}",
+                "REGEN": true,
+                "WORKSPACE": "$penv{WORKSPACE}"
+            },
+            "hidden": true,
+            "warnings": {
+                "dev": false
+            }
+        }
+    ]
+}

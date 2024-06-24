@@ -1,0 +1,38 @@
+source "boards/Kconfig"
+osource "${KCONFIG_BINARY_DIR}/Kconfig.modules"
+osource "${KCONFIG_APP_DIR}/Kconfig"
+source "platforms/mss/platform/Kconfig"
+
+menu "Platform"
+choice PLATFORM
+    bool
+    prompt "Choose a platform for your example"
+    default PLATFORM_MSS
+
+    config PLATFORM_MSS
+        bool "MSS"
+
+endchoice
+
+config MARCH
+    string
+    prompt "Enter the system architecture"
+    default ""
+    help
+        Eg. rv64imafdc_zicsr_zifencei
+
+config MABI
+    string
+    prompt "Enter the system application binary interface"
+    default ""
+    help
+        Eg. lp64d
+
+config SYSTEM_PROCESSOR
+    string
+    prompt "Enter the system processor"
+    default ""
+    help
+        Eg. rv64imafdc_zicsr
+        
+endmenu

@@ -1,0 +1,14 @@
+build-*/
+xpack-*
+.config*
+autoconf.h
+__pycache__
+openocd/
+debug/
+*.zip
+*.tar*
+.vscode/settings.json
+*.env
+riscv64-*
+renode-latest/
+renode_portable/

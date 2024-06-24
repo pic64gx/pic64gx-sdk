@@ -1,0 +1,4 @@
+kconfiglib==14.1.0
+windows-curses==2.3.2; sys_platform == "win32" or sys_platform == "cygwin"
+GitPython==3.1.31
+pyyaml==6.0.1
