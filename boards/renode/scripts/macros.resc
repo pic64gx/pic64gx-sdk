@@ -1,0 +1,260 @@
+# Common PolarFire SoC macros
+# Type "runMacros" to see available macros, example "runMacros $MCsrmonp"
+
+
+macro BridgeNetworkMac0
+"""
+echo "Creating switch and tap."
+echo "Running it for the first time might cause 'Could not set TUNSETIFF, error: 2' message and request for entering sudo password."
+emulation CreateSwitch "switch"
+emulation CreateTap "renode-tap0" "tap"
+connector Connect host.tap switch
+connector Connect mac0 switch
+echo "Host should have now the renode-tap0 interface aviable."
+echo "If this macro is run after the emulation has been started, then run $StartBridgeMac0 macro."
+"""
+
+macro StartBridgeMac0
+"""
+host.tap Start
+"""
+
+macro DebugMac0
+"""
+logLevel -1 mac0
+"""
+
+macro WiresharkRun
+"""
+emulation LogEthernetTraffic
+"""
+
+macro WiresharkShow
+"""
+host.wireshark-allEthernetTraffic Run
+"""
+
+
+macro MCsrLegend
+"""
+echo "Reference: RISC-V Privileged Specification v1.10"
+echo ""
+echo "mstatus (for RV64 and RV128):"
+echo "XLEN-1 XLEN-2:36 35:34 33:32 31:23 22  21 20  19  18  17"
+echo "SD     WPRI      SXL   UXL   WPRI  TSR TW TVM MXR SUM MPRV"
+echo ""
+echo "16:15 14:13 12:11 10:9  8   7    6    5    4    3   2    1   0"
+echo "XS    FS    MPP   WPRI  SPP MPIE WPRI SPIE UPIE MIE WPRI SIE UIE"
+echo ""
+echo "     XLEN-1:12 11   10   9    8    7    6    5    4    3    2    1    0"
+echo "mip: WIRI      MEIP WIRI SEIP UEIP MTIP WIRI STIP UTIP MSIP WIRI SSIP USIP"
+echo "mie: WIRI      MEIE WIRI SEIE UEIE MTIE WIRI STIE UTIE MSIE WIRI SSIE USIE"
+echo ""
+echo "mcause values (based on PFSoC 64-bit target) for synchronous exceptions:"
+echo "0x0 Instruction address misaligned (mtval is the address)"
+echo "0x1 Instruction access fault       (mtval is the address)"
+echo "0x2 Illegal instruction            (mtval is the instruction opcode)"
+echo "0x3 Breakpoint"
+echo "0x4 Load address misaligned        (mtval is the address)"
+echo "0x5 Load address fault             (mtval is the address)"
+echo "0x6 Store/AMO address fault        (mtval is the address)"
+echo "0x7 Store/AMO access fault         (mtval is the address)"
+echo "0x8 Environment call from U-mode"
+echo "0x9 Environment call from S-mode"
+echo "0xA Reserved"
+echo "0xB Environment call from M-mode"
+echo "0xC Instruction page fault"
+echo "0xD Load page fault                (mtval is the address)"
+echo "0xE Reserved"
+echo "0xF Store page fault               (mtval is the address)"
+echo ""
+echo "For interrupts:"
+echo "0x8000000000000001 Supervisor software interrupt"
+echo "0x8000000000000003 Machine software interrupt"
+echo "0x8000000000000005 Supervisor timer interrupt"
+echo "0x8000000000000007 Machine timer interrupt"
+echo "0x8000000000000009 Supervisor external interrupt"
+echo "0x8000000000000009 Machine external interrupt"
+"""
+
+macro MCsr
+"""
+echo "mstatus (Machine Status):"
+`echo $CSR_CORE` MSTATUS
+
+echo "mip (Machine Interrupt Pending):"
+`echo $CSR_CORE` MIP
+
+echo "mie (Machine Interrupt Enable):"
+`echo $CSR_CORE` MIE
+
+echo "mcause (Machine Exception Cause):"
+`echo $CSR_CORE` MCAUSE
+
+echo "mtvec (Machine Trap Vector):"
+`echo $CSR_CORE` MTVEC
+
+echo "mtval/mbadadd (Machine Trap Value, addr/op):"
+`echo $CSR_CORE` MTVAL
+
+echo "mscratch (Machine Scratch):"
+`echo $CSR_CORE` MSCRATCH
+
+echo "mepc (Machine Exception PC):"
+`echo $CSR_CORE` MEPC
+
+echo "pc (Program Counter):"
+`echo $CSR_CORE` PC
+"""
+
+macro MCsrmonp
+"""
+$CSR_CORE=sysbus.monp
+runMacro $MCsr
+echo "mepc Symbol:"
+sysbus FindSymbolAt `sysbus.monp MEPC`
+echo "pc Symbol:"
+sysbus FindSymbolAt `sysbus.monp PC`
+"""
+
+macro MCsrU54_1
+"""
+$CSR_CORE=sysbus.u54_1
+runMacro $MCsr
+echo "mepc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 MEPC`
+echo "pc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 PC`
+"""
+
+macro MCsrU54_2
+"""
+$CSR_CORE=sysbus.u54_2
+runMacro $MCsr
+echo "mepc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 MEPC`
+echo "pc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 PC`
+"""
+
+macro MCsrU54_3
+"""
+$CSR_CORE=sysbus.u54_3
+runMacro $MCsr
+echo "mepc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 MEPC`
+echo "pc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 PC`
+"""
+
+macro MCsrU54_4
+"""
+$CSR_CORE=sysbus.u54_4
+runMacro $MCsr
+echo "mepc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 MEPC`
+echo "pc Symbol:"
+sysbus FindSymbolAt `sysbus.u54_1 PC`
+"""
+
+macro MCsrAll
+"""
+runMacro $MCsrLegend
+echo ""
+
+echo "------------------------------"
+echo "------------ monp -------------"
+echo "------------------------------"
+runMacro $MCsrmonp
+echo ""
+
+echo "------------------------------"
+echo "----------- U54_1 ------------"
+echo "------------------------------"
+runMacro $MCsrU54_1
+echo ""
+
+echo "------------------------------"
+echo "----------- U54_2 ------------"
+echo "------------------------------"
+runMacro $MCsrU54_2
+echo ""
+
+echo "------------------------------"
+echo "----------- U54_3 ------------"
+echo "------------------------------"
+runMacro $MCsrU54_3
+echo ""
+
+echo "------------------------------"
+echo "----------- U54_4 ------------"
+echo "------------------------------"
+runMacro $MCsrU54_4
+echo ""
+"""
+
+macro Tracemonp
+"""
+sysbus.monp LogFunctionNames True
+logLevel 1 sysbus.monp
+"""
+
+
+#macro TraceU54_1
+#"""
+#sysbus.u54_1 LogFunctionNames True
+#logLevel 1 sysbus.u54_1
+#"""
+
+
+#macro TraceU54_2
+#"""
+#sysbus.u54_2 LogFunctionNames True
+#logLevel 1 sysbus.u54_2
+#"""
+
+
+#macro TraceU54_3
+#"""
+#sysbus.u54_3 LogFunctionNames True
+#logLevel 1 sysbus.u54_3
+#"""
+
+
+#macro TraceU54_4
+#"""
+#sysbus.u54_4 LogFunctionNames True
+#logLevel 1 sysbus.u54_4
+#"""
+
+macro TraceAll
+"""
+runMacro $Tracemonp
+runMacro $TraceU54_1
+runMacro $TraceU54_2
+#runMacro $TraceU54_3
+#runMacro $TraceU54_4
+"""
+
+
+macro LoadSymbols
+"""
+sysbus LoadSymbolsFrom $SYMBOLS
+"""
+
+macro SetAllPCs
+"""
+sysbus SetPCOnAllCores $COMMON_PC
+"""
+
+macro ReadyForGdb
+"""
+console_log ""
+console_log ""
+console_log ""
+console_log ""
+console_log ""
+console_log "Renode has been started successfully and is ready for a gdb connection."
+
+"""
+

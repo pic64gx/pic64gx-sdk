@@ -1,0 +1,33 @@
+:name: Curiosity PIC64
+:description: This is a sample script prepared to create a Curiosity PIC64 platform
+
+include @scripts/macros.resc
+
+logLevel 3
+
+using sysbus
+mach create
+
+machine LoadPlatformDescription @platforms/cpus/curiosity-pic64.repl
+
+machine LoadPlatformDescriptionFromString 
+"""
+
+"""
+
+
+logLevel 3 sysbus.e51
+logLevel 3 sysbus.u54_1
+logLevel 3 sysbus.u54_2
+logLevel 3 sysbus.u54_3
+logLevel 3 sysbus.u54_4
+
+# Before invoking this script the GDB port has to be set, example: 
+# $GDB_SERVER_PORT=3333
+# When this script (or its children) are invoked from the SoftConsole external 
+# launcher then the GDB port can be set by adding the following argument before
+# the platform script is invoked: 
+# -e "$GDB_SERVER_PORT=3333"
+echo -n "Starting GDB server on port: "
+echo $GDB_SERVER_PORT
+machine StartGdbServer `echo $GDB_SERVER_PORT`
