@@ -9,14 +9,14 @@
             "MIMode": "gdb",
             "linux": {
                 "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
-                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd"
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-4/bin/openocd"
             },
             "windows": {
                 "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
-                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd.exe"
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-4/bin/openocd.exe"
             },
             "miDebuggerArgs": "-se ${workspaceFolder}/${input:path_to_image}",
-            "debugServerArgs": "--command \"set DEVICE MPFS\" --file board/${input:debugger_config}.cfg",
+            "debugServerArgs": "--command \"set DEVICE PIC64GX\" --file board/${input:debugger_config}.cfg",
             "filterStderr": true,
 
             "serverStarted": "Info : Listening on port 3333 for gdb connections",
@@ -91,14 +91,14 @@
             "MIMode": "gdb",
             "linux": {
                 "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb",
-                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd"
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-4/bin/openocd"
             },
             "windows": {
                 "miDebuggerPath": "${workspaceFolder}/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gdb.exe",
-                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-3/bin/openocd.exe"
+                "debugServerPath": "${workspaceFolder}/modules/debug/openocd-0.12.0-4/bin/openocd.exe"
             },
             "miDebuggerArgs": "-se ${workspaceFolder}/${input:path_to_image}",
-            "debugServerArgs": "--command \"set DEVICE PIC64GX\" -f board/microchip_riscv_efp5.cfg",
+            "debugServerArgs": "--command \"set DEVICE PIC64GX\" -f board/microchip_pic64gx_curiosity.cfg",
             "filterStderr": true,
 
             "serverStarted": "Info : Listening on port 3333 for gdb connections",
@@ -137,9 +137,9 @@
             "id": "debugger_config",
             "type": "pickString",
             "options": [
-                "microchip_riscv_efp5"
+                "microchip_pic64gx_curiosity"
             ],
-            "default": "microchip_riscv_efp5",
+            "default": "microchip_pic64gx_curiosity",
             "description": "Debug probe "
         }
     ]
