@@ -9,15 +9,8 @@ cmake_minimum_required(VERSION 3.27.1)
 # function of the same name. The following lines make sure that __project  calls
 # the original project(). See https://cmake.org/pipermail/cmake/2015-October/061751.html.
 
-function(project)
-endfunction()
-
-function(_project)
-endfunction()
-
-macro(project project_name)
-# call the original cmake project() function
-__project(${project_name} C ASM CXX)
+macro(sdk_project project_name)
+project(${project_name} C ASM CXX)
 
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
 

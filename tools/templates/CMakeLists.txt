@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27.1)
 
 include(${WORKSPACE}/sdk/cmake/common.cmake)
 
-project(${NAME})
+sdk_project(${NAME})
 
 target_sources(${PROJECT_NAME} PUBLIC
 ${PROJECT_SOURCE_FILES}
