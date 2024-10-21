@@ -4,6 +4,6 @@ void e51(void)
 {
     while (1U)
     {
-        
+
     }
 }

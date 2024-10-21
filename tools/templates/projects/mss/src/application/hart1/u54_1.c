@@ -4,6 +4,6 @@ void u54_1(void)
 {
     while (1u)
     {
-        
+
     }
 }
