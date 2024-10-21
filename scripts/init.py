@@ -180,6 +180,9 @@ component for {module_name}"""
         shutil.copyfile(
             os.path.join(sdk_base, "Kconfig"), os.path.join(sdk_base, "../Kconfig")
         )
+        shutil.copytree(
+             os.path.join(sdk_base, ".vscode"), os.path.join(sdk_base, "../.vscode")
+        )
 
 
 if __name__ == "__main__":
