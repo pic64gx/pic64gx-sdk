@@ -181,7 +181,8 @@ component for {module_name}"""
             os.path.join(sdk_base, "Kconfig"), os.path.join(sdk_base, "../Kconfig")
         )
         shutil.copytree(
-             os.path.join(sdk_base, ".vscode"), os.path.join(sdk_base, "../.vscode")
+            os.path.join(sdk_base, ".vscode"), os.path.join(sdk_base, "../.vscode"),
+            dirs_exist_ok=True
         )
 
 
