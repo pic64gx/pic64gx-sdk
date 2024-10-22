@@ -10,14 +10,14 @@
             "path": "../modules/kconfiglib"
         },
         {
-            "name": "openocd-0.12.0-3",
+            "name": "openocd-0.12.0-4",
             "type": "executable",
-            "path": "../modules/debug/openocd-0.12.0-3",
+            "path": "../modules/debug/openocd-0.12.0-4",
             "parent_dirs": true,
             "os": {
-                "linux": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-linux-x64.tar.gz"},
-                "win32": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-win32-x64.zip"},
-                "cygwin": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.1/xpack-openocd-0.12.0-3-win32-x64.zip"}
+                "linux": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.3/xpack-openocd-0.12.0-4-linux-x64.tar.gz"},
+                "win32": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.3/xpack-openocd-0.12.0-4-win32-x64.zip"},
+                "cygwin": {"url":"https://github.com/microchip-fpga/openocd/releases/download/v0.12.0-mchp.0.0.3/xpack-openocd-0.12.0-4-win32-x64.zip"}
             }
         },
         {
