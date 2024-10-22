@@ -202,7 +202,10 @@ def main(args):
             else:
                 pass
         elif sym_type == "int":
-            value = int(value)
+            try:
+                value = int(value)
+            except:
+                pass
         else:
             pass
 
