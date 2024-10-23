@@ -1,30 +1,48 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_rtc.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) RTC bare metal software
- * driver public APIs.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ *
+ * PIC64GX Microprocessor subsystem RTC bare metal software driver public
+ * APIs.
+ *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
 /*=========================================================================*//**
-  @mainpage PolarFire MSS RTC Bare Metal Driver.
+  @mainpage PIC64GX Coreplex RTC Bare Metal Driver.
 
   ==============================================================================
   Introduction
   ==============================================================================
-  The PolarFire SoC Microprocessor Subsystem (MSS) includes a real time counter
-  (RTC) that can generate alarms and wake-up functions in real time. The RTC core
+  The PIC64GX Microprocessor Subsystem (MSS) includes a real time counter
+  (RTC) that can generate alarms and wakeup functions in real time. The RTC core
   also provides the feature of real time clock. This software driver provides a
   set of functions for controlling the MSS RTC as part of a bare metal system
   where no operating system is available. The driver can be adapted for use as
   part of an operating system, but the implementation of the adaptation layer
   between the driver and the operating system's driver model is outside the
   scope of the driver.
-  
+
   The MSS RTC driver provides support for the following features:
     - Initialization of the RTC
     - Configuration of the RTC time-base
@@ -33,16 +51,16 @@
     - Get the current calendar or binary mode count
     - Start and stop the RTC counting
     - Set alarm conditions
-    - Enable, disable and clear the wake-up interrupt
-    
+    - Enable, disable and clear the wakeup interrupt
+
   ==============================================================================
   Hardware Flow Dependencies
   ==============================================================================
   The configuration of all features of the MSS RTC driver is covered by this
   driver except for the clock source driving the MSS RTC clock(RTCCLK) input.
-  The PolarFire SoC MSS clock controller supplies single clock source of 1 MHz
+  The PIC64GX MSS clock controller supplies single clock source of 1 MHz
   to the MSS RTC clock input.
-  On PolarFire SoC an AXI switch forms a bus matrix interconnect among multiple
+  On PIC64GX an AXI switch forms a bus matrix interconnect among multiple
   masters and multiple slaves. Five RISC-V CPUs connect to the Master ports M10
   to M14 of the AXI switch. By default, all the APB peripherals are accessible
   on AXI-Slave 5 of the AXI switch via the AXI to AHB and AHB to APB bridges
@@ -51,13 +69,13 @@
   alternatively be accessed on the AXI-Slave 6 via the AXI to AHB and AHB to
   APB bridges (referred as the AMP APB bus).
   Application must make sure that the RTC is appropriately configured on one of
-  the APB bus described above by configuring the PolarFire SoC system registers
+  the APB bus described above by configuring the PIC64GX system registers
   (SYSREG) as per the application need and that the appropriate data structures
   are provided to this driver as parameter to the functions provided by this
   driver.
   The base address and register addresses and interrupt number assignment for
-  the MSS RTC block are defined as constants in the PolarFire SoC MPFS HAL. You
-  must ensure that the latest PolarFire SoC MPFS HAL is included in the project
+  the MSS RTC block are defined as constants in the PIC64GX PIC64GX HAL. You
+  must ensure that the latest PIC64GX PIC64GX HAL is included in the project
   settings of the software tool chain used to build your project and that it is
   generated into your project.
 
@@ -70,7 +88,7 @@
     - Setting RTC alarm values
     - Starting and stopping the RTC
     - Interrupt Control
-    
+
   --------------------------------
   Initialization of the RTC driver and hardware
   --------------------------------
@@ -78,59 +96,59 @@
   function. The MSS_RTC_init() function must be called before any other MSS RTC
   driver functions are called.
   The MSS_RTC_init() function:
-    •   Stops the RTC counters and disables the RTC alarm
-    •   Disables the RTC wake-up interrupt in the RTC and in the Platform Level
+    *   Stops the RTC counters and disables the RTC alarm
+    *   Disables the RTC wakeup interrupt in the RTC and in the Platform Level
         Interrupt Controller (PLIC).
-    •   Clears any pending RTC wake-up interrupt in the RTC and in the Platform
+    *   Clears any pending RTC wakeup interrupt in the RTC and in the Platform
         Level Interrupt Controller (PLIC).
-    •   Enables the RTC_WAKEUP_CR[0] mask bit in the MSS System Register to
-        connect the RTC wake-up interrupt to the Platform Level Interrupt
+    *   Enables the RTC_WAKEUP_CR[0] mask bit in the MSS System Register to
+        connect the RTC wakeup interrupt to the Platform Level Interrupt
         Controller.
-    •   Resets the RTC counters, alarm and the compare registers
-    •   Sets the RTC's operating mode to binary counter mode or calendar
+    *   Resets the RTC counters, alarm and the compare registers
+    *   Sets the RTC's operating mode to binary counter mode or calendar
         counter mode, as specified by the mode parameter
-    •   Sets the RTC's prescaler register to the value specified by the
+    *   Sets the RTC's prescaler register to the value specified by the
         prescaler parameter. The frequency of the clock source driving the MSS
         RTC clock (RTCCLK) input is required to calculate the prescaler value.
-    
+
   --------------------------------------------
   Setting and Reading the RTC Counter Value
   --------------------------------------------
-  The MSS RTC supports two mode of operation – binary mode and calendar mode.
+  The MSS RTC supports two mode of operation - binary mode and calendar mode.
   The following functions are used to set and read the current value of the
   counter when the MSS RTC is configured to operate in binary mode:
-    •   MSS_RTC_set_binary_count() – This function is used to set the current
+    *   MSS_RTC_set_binary_count() - This function is used to set the current
                                      value of the RTC binary counter.
-    •   MSS_RTC_get_binary_count() – This function is used to read the current
+    *   MSS_RTC_get_binary_count() - This function is used to read the current
                                       value of the RTC binary counter.
 
   The following functions are used to set and read the current value of the
   counter the MSS RTC is configured to operate in calendar mode:
-    •   MSS_RTC_set_calendar_count() – This function is used to set the current
+    *   MSS_RTC_set_calendar_count() - This function is used to set the current
                                        value of the RTC calendar counter.
-    •   MSS_RTC_get_calendar_count() – This function is used to read the current
+    *   MSS_RTC_get_calendar_count() - This function is used to read the current
                                        value of the RTC calendar counter.
 
   The following functions resets the RTC counter in either binary or calendar
   operating mode:
-    •   MSS_RTC_reset_counter() – This function resets the RTC counter.
+    *   MSS_RTC_reset_counter() - This function resets the RTC counter.
 
-    
+
   --------------------------------------------
   Setting RTC Alarms
   --------------------------------------------
   The MSS RTC can generate alarms when the counter matches a specified count
   value in binary mode or a date and time in calendar mode.
   The following functions are used to set up alarms:
-    •   MSS_RTC_set_binary_count_alarm() – This function sets up one-shot or
+    *   MSS_RTC_set_binary_count_alarm() - This function sets up one-shot or
                                            periodic alarms when the MSS RTC is
                                            configured to operate in binary mode.
-    •   MSS_RTC_set_calendar_count_alarm() – This function sets up one-shot or
+    *   MSS_RTC_set_calendar_count_alarm() - This function sets up one-shot or
                                              periodic alarms when the MSS RTC is
                                              configured to operate in calendar
                                              mode.
-  Note: The alarm asserts a wake-up interrupt to the RISC-V Core. This function
-  enables the RTC’s wake-up interrupt output, however the RTC wake-up interrupt
+  Note: The alarm asserts a wakeup interrupt to the RISC-V Core. This function
+  enables the RTC's wakeup interrupt output, however the RTC wakeup interrupt
   input to the RISC-V PLIC must be enabled separately by calling the
   MSS_RTC_enable_irq() function. The alarm can be disabled at any time by
   calling the MSS_RTC_disable_irq() function.
@@ -139,30 +157,30 @@
   Starting and Stopping the RTC Counter
   --------------------------------------------
   The following functions start and stop the RTC counter:
-    - MSS_RTC_start() – This function starts the RTC counter.
-    - MSS_RTC_stop() – This function stops the RTC counter.
-    
+    - MSS_RTC_start() - This function starts the RTC counter.
+    - MSS_RTC_stop() - This function stops the RTC counter.
+
   -------------------------------------------
   Interrupt Control
   -------------------------------------------
   The MSS_RTC_enable_irq () function enables the RTC_WAKEUP_CR[0] mask bit in
-  the MSS System Register to connect the RTC wake-up interrupt to the Platform
+  the MSS System Register to connect the RTC wakeup interrupt to the Platform
   Level Interrupt Controller.
   An rtc_wakeup_plic_IRQHandler () default implementation is defined, with weak
-  linkage, in the PolarFire SoC MPFS HAL. You must provide your own
+  linkage, in the PIC64GX PIC64GX HAL. You must provide your own
   implementation of the rtc_wakeup_plic_IRQHandler () function, which will
   override the default implementation, to suit your application.
-  The function prototype for the RTC wake-up interrupt handler is as follows:
+  The function prototype for the RTC wakeup interrupt handler is as follows:
       uint8_t  rtc_wakeup_plic_IRQHandler(void);
 
-  The RTC wake-up interrupt is controlled using the following functions:
-    •   MSS_RTC_enable_irq() – The MSS_RTC_enable_irq() function enables the RTC
-                                to interrupt the MSS when a wake-up alarm occurs.
-    •   MSS_RTC_disable_irq() – The MSS_RTC_disable_irq() function disables the
-                                RTC from interrupting the MSS when a wake-up
+  The RTC wakeup interrupt is controlled using the following functions:
+    *   MSS_RTC_enable_irq() - The MSS_RTC_enable_irq() function enables the RTC
+                                to interrupt the MSS when a wakeup alarm occurs.
+    *   MSS_RTC_disable_irq() - The MSS_RTC_disable_irq() function disables the
+                                RTC from interrupting the MSS when a wakeup
                                 alarm occurs.
-    •   MSS_RTC_clear_irq() – The MSS_RTC_clear_irq() function clears a pending
-                              RTC wake-up interrupt at the RTC wake-up output.
+    *   MSS_RTC_clear_irq() - The MSS_RTC_clear_irq() function clears a pending
+                              RTC wakeup interrupt at the RTC wakeup output.
                               You must call the MSS_RTC_clear_irq() function as
                               part of your implementation of the
                               rtc_wakeup_plic_IRQHandler() interrupt service
@@ -173,11 +191,12 @@
 #ifndef MSS_RTC_H_
 #define MSS_RTC_H_
 
-#include <stdint.h>
+#include "mss_rtc_regs.h"
+#include "hal/cpu_types.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_BINARY_MODE constant is used to specify the mode parameter to the
@@ -203,7 +222,7 @@ extern "C" {
   Any of the fields of the mss_rtc_calender_t structure can be set to
   MSS_RTC_CALENDAR_DONT_CARE, to indicate that they are not to be considered in
   deciding when the alarm will occur; this is necessary when setting periodic
-  alarms. 
+  alarms.
  */
 #define MSS_RTC_CALENDAR_DONT_CARE      0xFFu
 
@@ -217,13 +236,6 @@ extern "C" {
 #define MSS_RTC_THRUSDAY    5u
 #define MSS_RTC_FRIDAY      6u
 #define MSS_RTC_SATURDAY    7u
-
-
-/**************************************************************************//**
- MSS RTC module instance base addresses
-*/
-#define MSS_RTC_LO_ADDR                  0x20124000u
-#define MSS_RTC_HI_ADDR                  0x28124000u
 
 /***************************************************************************//**
   MSS RTC base addresses.
@@ -255,66 +267,30 @@ typedef enum {
  */
 typedef struct mss_rtc_calender
 {
-    uint8_t second;
-    uint8_t minute;
-    uint8_t hour;
-    uint8_t day;
-    uint8_t month;
-    uint8_t year;
-    uint8_t weekday;
-    uint8_t week;
+     uint8_t second;
+     uint8_t minute;
+     uint8_t hour;
+     uint8_t day;
+     uint8_t month;
+     uint8_t year;
+     uint8_t weekday;
+     uint8_t week;
 } mss_rtc_calender_t ;
-
-/******************************************************************************/
-/*                Device Specific Peripheral registers structures             */
-/******************************************************************************/
-typedef struct
-{
-    volatile uint32_t CONTROL_REG             ;
-    volatile uint32_t MODE_REG                ;
-    volatile uint32_t PRESCALER_REG           ;
-    volatile uint32_t ALARM_LOWER_REG         ;
-    volatile uint32_t ALARM_UPPER_REG         ;
-    volatile uint32_t COMPARE_LOWER_REG       ;
-    volatile uint32_t COMPARE_UPPER_REG       ;
-             uint32_t RESERVED0               ;
-    volatile uint32_t DATE_TIME_LOWER_REG     ;
-    volatile uint32_t DATE_TIME_UPPER_REG     ;
-
-             uint32_t RESERVED1[2]            ;
-    volatile uint32_t SECONDS_REG             ;
-    volatile uint32_t MINUTES_REG             ;
-    volatile uint32_t HOURS_REG               ;
-    volatile uint32_t DAY_REG                 ;
-    volatile uint32_t MONTH_REG               ;
-    volatile uint32_t YEAR_REG                ;
-    volatile uint32_t WEEKDAY_REG             ;
-    volatile uint32_t WEEK_REG                ;
-
-    volatile uint32_t SECONDS_CNT_REG         ;
-    volatile uint32_t MINUTES_CNT_REG         ;
-    volatile uint32_t HOURS_CNT_REG           ;
-    volatile uint32_t DAY_CNT_REG             ;
-    volatile uint32_t MONTH_CNT_REG           ;
-    volatile uint32_t YEAR_CNT_REG            ;
-    volatile uint32_t WEEKDAY_CNT_REG         ;
-    volatile uint32_t WEEK_CNT_REG            ;
-} RTC_TypeDef;
 
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_init() function initializes the RTC driver and hardware to a known
   state. To initialize the RTC hardware, this function:
-    •   Stops the RTC counters and disables the RTC alarm
-    •   Disables the RTC wakeup interrupt in the RTC and in the PolarFire SoC
+    *   Stops the RTC counters and disables the RTC alarm
+    *   Disables the RTC wakeup interrupt in the RTC and in the PIC64GX
         MSS Platform Level Interrupt Controller (PLIC).
-    •   Clears any pending RTC wakeup interrupt in the RTC and in the PolarFire
+    *   Clears any pending RTC wakeup interrupt in the RTC and in the PIC64GX
         SoC MSS Platform Level Interrupt Controller (PLIC).
-    •   Resets the RTC counters and the alarm and compare registers
-    •   Sets the RTC's operating mode to binary counter mode or calendar counter
+    *   Resets the RTC counters and the alarm and compare registers
+    *   Sets the RTC's operating mode to binary counter mode or calendar counter
         mode, as specified by the mode parameter
-    •   Sets the RTC's prescaler register to the value specified by the
+    *   Sets the RTC's prescaler register to the value specified by the
         prescaler parameter
-    •   The MSS clock controller can supply one of three clock sources to the
+    *   The MSS clock controller can supply one of three clock sources to the
         RTC clock input (RTCCLK):
         -   Crystal Oscillator 32.768 kHz
         -   1MHz Oscillator
@@ -322,7 +298,7 @@ typedef struct
 
   For calendar mode, program the prescaler register to generate a 1Hz signal
   from the active RTCCLK according to the following equation:
-        prescaler = RTCCLK – 1  (where RTCCLK unit is Hz)
+        prescaler = RTCCLK - 1  (where RTCCLK unit is Hz)
   For a 32.768 kHz clock, set the prescaler to 32768 - 1 = 32767.
   The prescaler register is 26 bits wide, allowing clock sources of up to 67 MHz
   to generate the 1Hz time base.
@@ -335,40 +311,39 @@ typedef struct
     peripheral. The MSS RTC can appear on either the AXI slave 5 or slave 6 per
     SYSREG configurations. The corresponding base address of this peripheral
     must be provided per your configuration.
-  
+
   @param mode
     The mode parameter is used to specify the operating mode of the RTC. The
     allowed values for mode are:
       - MSS_RTC_BINARY_MODE
       - MSS_RTC_CALENDAR_MODE
-    
+
   @param prescaler
     The prescaler parameter specifies the value to divide the incoming RTC clock
     by, to generate the RTC time base signal. For calendar mode, set the
     prescaler value to generate a 1Hz time base from the incoming RTC clock
     according to the following equation:
-        prescaler = RTCCLK – 1    (where the RTCCLK unit is Hz)
+        prescaler = RTCCLK - 1    (where the RTCCLK unit is Hz)
     For binary mode, set the prescaler value to generate a 1Hz time base or a
     different time base, as required.
     The prescaler parameter can be any integer value in the range 2 to 2^26.
-    
+
   @return
     This function does not return any value.
 
   Example:
-  The example code below shows how the RTC can be initialized only after a 
-  power-on reset.
+  The example code below shows how the RTC can be initialized only after a power-on
+  reset.
   @code
     #define PO_RESET_DETECT_MASK    0x00000001u
-    
+
     void e51(void)
     {
         uint32_t power_on_reset;
         power_on_reset = SYSREG->RESET_SOURCE_CR & PO_RESET_DETECT_MASK;
         if(power_on_reset)
         {
-            MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, 
-                         RTC_PERIPH_PRESCALER/ 10u );
+            MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, RTC_PERIPH_PRESCALER/ 10u );
             SYSREG->RESET_SOURCE_CR = PO_RESET_DETECT_MASK;
         }
     }
@@ -388,7 +363,7 @@ MSS_RTC_init
   binary counter.
   Note: This function must only be used when the RTC is configured to operate in
         binary counter mode.
-        
+
   @param new_rtc_value
     The new_rtc_value parameter specifies the new count value from which the RTC
     will increment. The binary counter is 43 bits wide, so the maximum allowed
@@ -409,7 +384,7 @@ MSS_RTC_set_binary_count
   RTC calendar counter.
   Note: This function must only be used when the RTC is configured to operate in
         calendar counter mode.
-        
+
   @param new_rtc_value
     The new_rtc_value parameter is a pointer to an mss_rtc_calender_t data
     structure specifying the new date and time value from which the RTC will
@@ -432,12 +407,12 @@ MSS_RTC_set_calendar_count
   parameter.
   Note: This function must only be used when the RTC is configured to operate in
         calendar counter mode.
-        
+
   @param p_rtc_calendar
     The p_rtc_calendar parameter is a pointer to an mss_rtc_calender_t data
     structure where the current value of the calendar counter will be written by
     the MSS_RTC_get_calendar_count() function
-    
+
   @return
     This function does not return a value.
  */
@@ -449,10 +424,10 @@ MSS_RTC_get_calendar_count
 
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_get_binary_count() function returns the current value of the RTC
-  binary counter. 
+  binary counter.
   Note: This function must only be used when the RTC is configured to operate in
         binary counter mode.
-        
+
   @param
     This function takes no parameters.
 
@@ -499,8 +474,8 @@ MSS_RTC_stop
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_reset_counter() function resets the RTC counters. If the counter
   was running before calling this function, then it continues incrementing from
-  the counter’s reset value.
-  
+  the counter's reset value.
+
   @param
     This function takes no parameters.
 
@@ -520,11 +495,11 @@ MSS_RTC_reset_counter
   function will be called when an RTC wakeup interrupt occurs.
 
   Note: The rtc_wakeup_plic_IRQHandler() default implementation is defined,
-  with weak linkage, in the PoalrFire SoC MPFS HAL. You must provide your own
+  with weak linkage, in the PoalrFire SoC PIC64GX HAL. You must provide your own
   implementation of the rtc_wakeup_plic_IRQHandler() function, which will
   override the default implementation, to suit your application.
 
-  Note: This function only enables the RTC wakeup interrupt at the PolarFire SoC
+  Note: This function only enables the RTC wakeup interrupt at the PIC64GX
   PLIC level. The alarm setting functions enable the wakeup interrupt output
   from the RTC.
 
@@ -542,8 +517,8 @@ MSS_RTC_enable_irq
 
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_disable_irq() function disables the RTC wakeup interrupt
-  (RTC_WAKEUP_PLIC)in the PolarFire SoC MSS PLIC.
-  Note: This function only disables the RTC wakeup interrupt at the PolarFire
+  (RTC_WAKEUP_PLIC)in the PIC64GX MSS PLIC.
+  Note: This function only disables the RTC wakeup interrupt at the PIC64GX
   SoC PLIC level. It does not disable the wakeup interrupt output from the RTC.
 
    @param
@@ -560,19 +535,19 @@ MSS_RTC_disable_irq
 
 /*-------------------------------------------------------------------------*//**
   The MSS_RTC_clear_irq() function clears a pending wakeup interrupt from the
-  RTC. This function does not clear the interrupt in the PolarFire SoC PLIC; it
+  RTC. This function does not clear the interrupt in the PIC64GX PLIC; it
   only clears the wakeup output from the RTC.
   Note: You must call the MSS_RTC_clear_irq() function as part of your
   implementation of the rtc_wakeup_plic_IRQHandler() RTC wakeup interrupt
   service routine (ISR) in order to prevent the same interrupt event
   retriggering a call to the ISR.
-        
+
   @param
     This function takes no parameters.
 
   @return
     This function does not return a value.
-  
+
   Example:
   The example code below demonstrates how the MSS_RTC_clear_irq() function is
   intended to be used as part of the RTC wakeup interrupt service routine used
@@ -599,8 +574,8 @@ MSS_RTC_clear_irq
   The MSS_RTC_set_calendar_count_alarm() function sets up the RTC to generate an
   alarm when the RTC count reaches the time/date specified by the alarm_value
   parameter. The alarm asserts a wakeup interrupt to the MSS. This function
-  enables the RTC’s wakeup interrupt output, however the RTC wakeup interrupt
-  input to the PolarFire SoC PLIC must be enabled separately by calling the
+  enables the RTC's wakeup interrupt output, however the RTC wakeup interrupt
+  input to the PIC64GX PLIC must be enabled separately by calling the
   MSS_RTC_enable_irq() function. The alarm can be disabled at any time by
   calling the MSS_RTC_disable_irq() function.
 
@@ -627,7 +602,7 @@ MSS_RTC_clear_irq
   Note: This function must only be used when the RTC is configured to operate
         in calendar counter mode.
 
-  
+
   @param alarm_value
     The alarm_value parameter is a pointer to an mss_rtc_calender_t data
     structure specifying the date and time at which the alarm is to occur. You
@@ -636,16 +611,16 @@ MSS_RTC_clear_irq
     mss_rtc_calender_t structure can be set to MSS_RTC_CALENDAR_DONT_CARE, to
     indicate that they are not to be considered in deciding when the alarm will
     occur; this is necessary when setting periodic alarms.
-  
+
   @return
     This function does not return a value.
-     
+
   Examples:
-  
+
   The following example code demonstrates how to configure the RTC to generate a
   single calendar alarm at a specific date and time. The alarm will only occur
   once and the RTC will keep incrementing regardless of the alarm taking place.
-  
+
   @code
     const mss_rtc_calender_t initial_calendar_count =
     {
@@ -658,7 +633,7 @@ MSS_RTC_clear_irq
         5u,      weekday
         37u      week
     };
-    
+
     mss_rtc_calender_t alarm_calendar_count =
     {
         17u,     second
@@ -670,21 +645,21 @@ MSS_RTC_clear_irq
         5u,      weekday
         37u      week
     };
-    
-    MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, RTC_PERIPH_PRESCALER/ 10u);
+
+    MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, RTC_PERIPH_PRESCALER/ 10u );
     MSS_RTC_clear_irq();
     MSS_RTC_set_calendar_count(&initial_calendar_count);
     MSS_RTC_enable_irq();
     MSS_RTC_start();
-    
+
     MSS_RTC_set_calendar_count_alarm(&alarm_calendar_count);
   @endcode
-  
+
   The following example code demonstrates how to configure the RTC to generate a
   periodic calendar alarm. The RTC is configured to generate an alarm every
   Tuesday at 16:45:00. The alarm will reoccur every week until the RTC wakeup
   interrupt is disabled using a call to MSS_RTC_disable_irq().
-  
+
   @code
     mss_rtc_calender_t initial_calendar_count =
     {
@@ -697,7 +672,7 @@ MSS_RTC_clear_irq
         MSS_RTC_MONDAY,                 <--weekday
         37u                             <--week
     };
-    
+
     mss_rtc_calender_t alarm_calendar_count =
     {
         MSS_RTC_CALENDAR_DONT_CARE,     <--second
@@ -709,22 +684,22 @@ MSS_RTC_clear_irq
         MSS_RTC_TUESDAY,                <--weekday
         MSS_RTC_CALENDAR_DONT_CARE      <--week
     };
-    
-    MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, RTC_PERIPH_PRESCALER/ 10u);
+
+    MSS_RTC_init(MSS_RTC_LO_BASE, MSS_RTC_BINARY_MODE, RTC_PERIPH_PRESCALER/ 10u );
     MSS_RTC_set_calendar_count(&initial_calendar_count);
     MSS_RTC_enable_irq();
     MSS_RTC_start();
-    
+
     MSS_RTC_set_calendar_count_alarm(&alarm_calendar_count);
   @endcode
-  
+
   The following example code demonstrates the code that you need to include in
   your application to handle alarms. It is the interrupt service routine for the
-  RTC wakeup interrupt input to the PolarFire SoC PLIC. You need to add your
+  RTC wakeup interrupt input to the PIC64GX PLIC. You need to add your
   application code in this function in place of the process_alarm() function but
   you must retain the call to MSS_RTC_clear_irq() to ensure that the same alarm
   does not retrigger the interrupt.
-  
+
   @code
     #if defined(__GNUC__)
     __attribute__((__interrupt__)) void rtc_wakeup_plic_IRQHandler( void )
@@ -747,8 +722,8 @@ MSS_RTC_set_calendar_count_alarm
   The MSS_RTC_set_binary_count_alarm() function sets up the RTC to generate an
   alarm when the RTC count reaches the value specified by the alarm_value
   parameter. The alarm asserts a wakeup interrupt to the MSS. This function
-  enables the RTC’s wakeup interrupt output, however the RTC wakeup interrupt
-  input to the PolarFire SoC PLIC must be enabled separately by calling the
+  enables the RTC's wakeup interrupt output, however the RTC wakeup interrupt
+  input to the PIC64GX PLIC must be enabled separately by calling the
   MSS_RTC_enable_irq() function. The alarm can be disabled at any time by
   calling the MSS_RTC_disable_irq() function.
 
@@ -768,17 +743,17 @@ MSS_RTC_set_calendar_count_alarm
 
   Note: This function must only be used when the RTC is configured to operate
         in binary counter mode.
-  
+
   @param alarm_value
     The alarm_value parameter is a 64-bit unsigned value specifying the RTC
     counter value that must be reached for the requested alarm to occur.
-  
+
   @param alarm_type
     The alarm_type parameter specifies whether the requested alarm is a single
     shot or periodic alarm. It can only take one of these two values:
      - MSS_RTC_SINGLE_SHOT_ALARM,
      - MSS_RTC_PERIODIC_ALARM
-  
+
   @return
     This function does not return a value.
  */
@@ -795,10 +770,10 @@ MSS_RTC_set_binary_count_alarm
   zero if no RTC counter increment has occurred. It returns a non-zero value if
   the RTC counter has incremented. This function can be used whether the RTC is
   configured to operate in calendar or binary counter mode.
-  
+
   @return
-   This function returns, 
-   
+   This function returns,
+
    |Value    |  Description                                              |
    |---------|-----------------------------------------------------------|
    |zero:    |  if the RTC has not incremented since the last call to    |
@@ -806,6 +781,7 @@ MSS_RTC_set_binary_count_alarm
    |---------|-----------------------------------------------------------|
    |non-zero:|  if the RTC has incremented since the last call to        |
    |         |  MSS_RTC_clear_update_flag().                             |
+   |         |                                                           |
 
   Example
   This example waits for the RTC timer to increment by one second.
@@ -820,7 +796,7 @@ MSS_RTC_set_binary_count_alarm
     }
   @endcode
  */
-uint32_t 
+uint32_t
 MSS_RTC_get_update_flag
 (
     void
@@ -830,10 +806,10 @@ MSS_RTC_get_update_flag
   The MSS_RTC_clear_update_flag() function clears the CONTROL register flag that
   is set when the RTC counter increments. It is used alongside function
   MSS_RTC_get_update_flag() to detect RTC counter increments.
-  
+
   @return
     This function does not return a value.
-    
+
   Example
   The example below will wait for the RTC timer to increment by one second.
   @code

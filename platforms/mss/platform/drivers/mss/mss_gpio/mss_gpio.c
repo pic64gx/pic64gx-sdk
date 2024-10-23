@@ -1,32 +1,32 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_gpio.c
- * @author PolarFire SoC Microprocessor Subsystem (MSS) GPIO bare metal driver
- * implementation.
+ * PIC64GX microprocessor subsystem GPIO bare metal driver implementation.
+ *
+ * This driver is based on SmartFusion2 MSS GPIO driver v2.1.102
  *
  */
 
-#include "mpfs_hal/mss_hal.h"
+#include "mss_hal.h"
 #include "mss_gpio.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------*//**
  * Defines.
  */
-#define GPIO_INT_ENABLE_MASK                ((uint32_t)0x00000008)
-#define OUTPUT_BUFFER_ENABLE_MASK           ((uint32_t)0x00000004)
+#define GPIO_INT_ENABLE_MASK                ((uint32_t)0x00000008u)
+#define OUTPUT_BUFFER_ENABLE_MASK           ((uint32_t)0x00000004u)
 
 /*These constants define the number of GPIO bits available on each GPIO
  * hardware block*/
-#define NB_OF_GPIO_GPIO0                    ((uint32_t)14)
-#define NB_OF_GPIO_GPIO1                    ((uint32_t)24)
-#define NB_OF_GPIO_GPIO2                    ((uint32_t)32)
+#define NB_OF_GPIO_GPIO0                    ((uint32_t)14u)
+#define NB_OF_GPIO_GPIO1                    ((uint32_t)24u)
+#define NB_OF_GPIO_GPIO2                    ((uint32_t)32u)
 
 /*This constant indicates the total number of GPIO interrupt inputs at the PLIC
  * (includes the direct and non-direct GPIO interrupts)*/
@@ -123,12 +123,29 @@ static uint8_t gpio_number_validate(GPIO_TypeDef const * gpio, mss_gpio_id_t gpi
  * MSS_GPIO_init
  * See "mss_gpio.h" for details of how to use this function.
  */
-void
-MSS_GPIO_init
-(
-    GPIO_TypeDef * gpio
-)
+void MSS_GPIO_init(GPIO_TypeDef * gpio)
 {
+#ifdef CONFIG_MODULE_M100PFS
+    uint32_t clock_mask;
+    uint32_t reset_mask;
+
+    if (GPIO0_LO == gpio || GPIO0_HI == gpio) {
+        clock_mask = (uint32_t)SUBBLK_CLOCK_CR_GPIO0_MASK;
+        reset_mask = (uint32_t)SOFT_RESET_CR_GPIO0_MASK;
+    } else if (GPIO1_LO == gpio || GPIO1_HI == gpio) {
+        clock_mask = (uint32_t)SUBBLK_CLOCK_CR_GPIO1_MASK;
+        reset_mask = (uint32_t)SOFT_RESET_CR_GPIO1_MASK;
+    } else {
+        clock_mask = (uint32_t)SUBBLK_CLOCK_CR_GPIO2_MASK;
+        reset_mask = (uint32_t)SOFT_RESET_CR_GPIO2_MASK;
+    }
+
+    /* Enable clock to GPIO block and toggle reset signal */
+    SYSREG->SUBBLK_CLOCK_CR |= clock_mask;
+    SYSREG->SOFT_RESET_CR |= reset_mask;
+    SYSREG->SOFT_RESET_CR &= ~reset_mask;
+#endif	/* CONFIG_MODULE_M100PFS */
+
     /* clear all pending interrupts*/
     gpio->GPIO_IRQ = 0xFFFFFFFFU;
 }
@@ -137,12 +154,7 @@ MSS_GPIO_init
  * MSS_GPIO_config
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_config
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id,
-    uint32_t config
-)
+void MSS_GPIO_config(GPIO_TypeDef * gpio, mss_gpio_id_t port_id, uint32_t config)
 {
     if (0U == gpio_number_validate(gpio, port_id))
     {
@@ -158,12 +170,7 @@ void MSS_GPIO_config
  * MSS_GPIO_config_byte
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_config_byte
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_byte_num_t byte_num,
-    uint32_t config
-)
+void MSS_GPIO_config_byte(GPIO_TypeDef * gpio, mss_gpio_byte_num_t byte_num, uint32_t config)
 {
     if (((GPIO0_LO == gpio) || (GPIO0_HI == gpio)) &&
                                                  (byte_num >= MSS_GPIO_BYTE_1))
@@ -190,11 +197,7 @@ void MSS_GPIO_config_byte
  * MSS_GPIO_config_all
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_config_all
-(
-    GPIO_TypeDef * gpio,
-    uint32_t config
-)
+void MSS_GPIO_config_all(GPIO_TypeDef * gpio, uint32_t config)
 {
     gpio->GPIO_CFG_ALL = config;
 }
@@ -203,12 +206,7 @@ void MSS_GPIO_config_all
  * MSS_GPIO_set_output
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_set_output
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id,
-    uint8_t value
-)
+void MSS_GPIO_set_output( GPIO_TypeDef * gpio, mss_gpio_id_t port_id, uint8_t value)
 {
     if (0U == gpio_number_validate(gpio, port_id))
     {
@@ -236,15 +234,10 @@ void MSS_GPIO_set_output
  * MSS_GPIO_drive_inout
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_drive_inout
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id,
-    mss_gpio_inout_state_t inout_state
-)
+void MSS_GPIO_drive_inout(GPIO_TypeDef * gpio, mss_gpio_id_t port_id, mss_gpio_inout_state_t inout_state)
 {
     uint32_t config;
-    
+
     if (0U == gpio_number_validate(gpio, port_id))
     {
         switch (inout_state)
@@ -290,11 +283,7 @@ void MSS_GPIO_drive_inout
  * MSS_GPIO_enable_irq
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_enable_irq
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id
-)
+void MSS_GPIO_enable_irq(GPIO_TypeDef * gpio, mss_gpio_id_t port_id)
 {
     uint32_t cfg_value;
 
@@ -332,11 +321,7 @@ void MSS_GPIO_enable_irq
  * See "mss_gpio.h" for details of how to use this function.
  */
 
-void MSS_GPIO_disable_irq
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id
-)
+void MSS_GPIO_disable_irq(GPIO_TypeDef * gpio, mss_gpio_id_t port_id)
 {
     uint32_t cfg_value;
 
@@ -373,11 +358,7 @@ void MSS_GPIO_disable_irq
  * MSS_GPIO_enable_nondirect_irq
  * See "mss_gpio.h" for details of how to use this function.
  */
-void
-MSS_GPIO_enable_nondirect_irq
-(
-    GPIO_TypeDef const * gpio
-)
+void MSS_GPIO_enable_nondirect_irq(GPIO_TypeDef const * gpio)
 {
     if ((GPIO0_LO == gpio) || (GPIO0_HI == gpio))
     {
@@ -401,11 +382,7 @@ MSS_GPIO_enable_nondirect_irq
  * MSS_GPIO_disable_nondirect_irq
  * See "mss_gpio.h" for details of how to use this function.
  */
-void
-MSS_GPIO_disable_nondirect_irq
-(
-    GPIO_TypeDef const * gpio
-)
+void MSS_GPIO_disable_nondirect_irq(GPIO_TypeDef const * gpio)
 {
     if ((GPIO0_LO == gpio) || (GPIO0_HI == gpio))
     {
@@ -429,11 +406,7 @@ MSS_GPIO_disable_nondirect_irq
  * MSS_GPIO_clear_irq
  * See "mss_gpio.h" for details of how to use this function.
  */
-void MSS_GPIO_clear_irq
-(
-    GPIO_TypeDef * gpio,
-    mss_gpio_id_t port_id
-)
+void MSS_GPIO_clear_irq(GPIO_TypeDef * gpio, mss_gpio_id_t port_id)
 {
     if (0U == gpio_number_validate(gpio, port_id))
     {
@@ -476,3 +449,4 @@ static uint8_t gpio_number_validate(GPIO_TypeDef const * gpio, mss_gpio_id_t gpi
 #ifdef __cplusplus
 }
 #endif
+

@@ -1,23 +1,23 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_usb_host_cif.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) USB Driver Stack
- *         USB Core Interface Layer (USB-CIFL)
- *           USBH-CIF driver
+ * Microchip PIC64GX MSS USB Driver Stack
+ *      USB Core Interface Layer (USB-CIFL)
+ *          USBH-CIF driver
  *
  * USBH-CIF driver public API.
  *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
 #ifndef __MSS_USB_HOST_CIF_H_
 #define __MSS_USB_HOST_CIF_H_
 
-#include "mss_usb_common_cif.h"
-#include "mss_usb_core_regs.h"
+#include "coreplex_usb_common_cif.h"
+#include "coreplex_usb_core_regs.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,28 +1,32 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_usb_common_cif.c
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) USB Driver Stack
- *          USB Core Interface Layer (USB-CIFL)
- *            USB-CIF driver
+ * Microchip PIC64GX MSS USB Driver Stack
+ *      USB Core Interface Layer (USB-CIFL)
+ *          USB-CIF driver
  *
  * USB-CIF driver implementation:
  * This source file implements MSS USB Interrupt handler functions. This file
  * also implements core interface function for the logical layer to control
  * the MSS USB core. These interface functions are independent of the USB mode.
  *
+ *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
-#include "mpfs_hal/mss_hal.h"
-#include "mss_usb_common_cif.h"
-#include "mss_usb_common_reg_io.h"
+#include "coreplex_usb_common_cif.h"
+
+#include "mss_assert.h"
+#include "coreplex_usb_common_reg_io.h"
+#include "coreplex_usb_core_regs.h"
+#include "mss_plic.h"
 
 #ifdef MSS_USB_HOST_ENABLED
-#include "mss_usb_host_cif.h"
-#include "mss_usb_host_reg_io.h"
+#include "coreplex_usb_host_cif.h"
+#include "coreplex_usb_host_reg_io.h"
 #endif  /* MSS_USB_HOST_ENABLED */
 
 #ifdef __cplusplus
@@ -76,7 +80,7 @@ MSS_USB_CIF_handle_rx_ep_irq
  * Main USB interrupt handler. It checks for TX/RX endpoint interrupts and USB
  * system level interrupts and calls the appropriate routine.
  */
-uint8_t usb_mc_plic_IRQHandler
+uint8_t PLIC_usb_mc_IRQHandler
 (
     void
 )
@@ -89,7 +93,7 @@ uint8_t usb_mc_plic_IRQHandler
     usb_irq = MSS_USB_CIF_read_irq_reg();
     tx_ep_irq = MSS_USB_CIF_read_tx_ep_irq_reg();
     rx_ep_irq = MSS_USB_CIF_read_rx_ep_irq_reg();
-    
+
     /*
      When operating in Host mode, on detecting Disconnect event, Disconnect
      Interrupt occurs but the HostMode bit in DevCtl is also cleared.
@@ -133,13 +137,6 @@ uint8_t usb_mc_plic_IRQHandler
         if (usb_irq & RESUME_IRQ_MASK)
         {
             g_mss_usbd_cb.usbd_resume();
-            MSS_USB_CIF_set_index_reg(MSS_USB_CEP);
-            MSS_USB_CIF_enable_usbirq(DISCONNECT_IRQ_MASK | SUSPEND_IRQ_MASK);
-            cep_state = MSS_USB_CTRL_EP_IDLE;
-            MSS_USB_CIF_clr_usb_irq_reg();
-            MSS_USB_CIF_cep_clr_setupend();
-            MSS_USB_CIF_cep_clr_stall_sent();
-            g_mss_usbd_cb.usbd_reset();
         }
         if (usb_irq & SUSPEND_IRQ_MASK)
         {
@@ -405,7 +402,7 @@ static void MSS_USB_CIF_handle_rx_ep_irq
  * Occurred and corresponding EP number then calls-back to upper layer to indicate
  * the event.
  */
-uint8_t usb_dma_plic_IRQHandler(void)
+uint8_t PLIC_usb_dma_IRQHandler(void)
 {
     mss_usb_dma_channel_t dma_channel= MSS_USB_DMA_CHANNEL1;
     uint8_t status = 0;
@@ -420,8 +417,8 @@ uint8_t usb_dma_plic_IRQHandler(void)
     {
         if (dma_irq & MSS_USB_BYTE_BIT_0_MASK)
         {
-            /* DMA Transfer for this channel is complete.Clear Start_transfer 
-               bit 
+            /* DMA Transfer for this channel is complete.Clear Start_transfer
+               bit
              */
             MSS_USB_CIF_dma_stop_xfr(dma_channel);
 
@@ -446,7 +443,7 @@ uint8_t usb_dma_plic_IRQHandler(void)
 #ifdef MSS_USB_HOST_ENABLED
                 if (MSS_USB_CORE_MODE_HOST == MSS_USB_CIF_get_mode())
                 {
-                    /* Call the host mode logical layer driver callback 
+                    /* Call the host mode logical layer driver callback
                        function
                      */
                     g_mss_usbh_cb.usbh_dma_handler(ep_num, dma_dir, status,
@@ -456,7 +453,7 @@ uint8_t usb_dma_plic_IRQHandler(void)
 #ifdef MSS_USB_DEVICE_ENABLED
                 if (MSS_USB_CORE_MODE_DEVICE == MSS_USB_CIF_get_mode())
                 {
-                    /* Call the device mode logical layer driver callback 
+                    /* Call the device mode logical layer driver callback
                        function
                      */
                     g_mss_usbd_cb.usbd_dma_handler(ep_num, dma_dir, status,
@@ -487,17 +484,17 @@ MSS_USB_CIF_rx_ep_read_prepare
     uint32_t xfr_length
 )
 {
-    /* 
-     * Fixed Buffer overwriting issue found with printer driver and issue with 
-     * interrupt transfer with DMA by moving the location of interrupt enable 
-     * function.
+    /*
+     * Fixed Buffer overwriting issue found with printer driver and issue with
+     *  interrupt transfer with DMA by moving the location of interrupt enable
+     *  function
      */
     if (DMA_ENABLE == dma_enable)
     {
-        /* Make sure that address is Modulo-4.Bits D0-D1 are read only.*/
-        ASSERT(!(((uint32_t)buf_addr) & 0x00000002U));
+        /*Make sure that address is Modulo-4.Bits D0-D1 are read only.*/
+        ASSERT(!(((ptrdiff_t)buf_addr) & 0x00000002U));
 
-        MSS_USB_CIF_dma_write_addr(dma_channel, (uint32_t)buf_addr);
+        MSS_USB_CIF_dma_write_addr(dma_channel, (ptrdiff_t)buf_addr);
 
         /*
          * DMA Count register will be loaded after receive interrupt occurs.
@@ -548,9 +545,9 @@ MSS_USB_CIF_ep_write_pkt
         if (DMA_ENABLE == dma_enable)
         {
             /* Make sure that address is Modulo-4.Bits D0-D1 are read only.*/
-            ASSERT(!(((uint32_t)buf_addr) & 0x00000002u));
+            ASSERT(!(((ptrdiff_t)buf_addr) & 0x00000002u));
 
-            MSS_USB_CIF_dma_write_addr(dma_channel,(uint32_t)(buf_addr));
+            MSS_USB_CIF_dma_write_addr(dma_channel,(ptrdiff_t)(buf_addr));
 
             if (MSS_USB_XFR_BULK == xfr_type)
             {
@@ -691,7 +688,7 @@ MSS_USB_CIF_tx_ep_configure
                                      mode,
                                      MSS_USB_DMA_BURST_MODE3,
                                      core_ep->num,
-                                     (uint32_t)(core_ep->buf_addr));
+                                     (ptrdiff_t)(core_ep->buf_addr));
     }
 
     MSS_USB_CIF_tx_ep_enable_irq(core_ep->num);
@@ -710,18 +707,17 @@ MSS_USB_CIF_rx_ep_configure
 {
     uint8_t dpb = 1u;
     mss_usb_dma_mode_t mode;
-    
     if (DPB_ENABLE == core_ep->dpb_enable)
     {
         dpb = 2u;
     }
 
     MSS_USB_CIF_rx_ep_set_fifo_size(core_ep->num,
-                                    ((core_ep->fifo_size) / dpb),
-                                    core_ep->dpb_enable);
+                                     ((core_ep->fifo_size) / dpb),
+                                     core_ep->dpb_enable);
 
     MSS_USB_CIF_rx_ep_set_fifo_addr(core_ep->num,
-                                    core_ep->fifo_addr);
+                                     core_ep->fifo_addr);
 
     if (DPB_ENABLE == core_ep->dpb_enable)
     {
@@ -768,7 +764,7 @@ MSS_USB_CIF_rx_ep_configure
                                      mode,
                                      MSS_USB_DMA_BURST_MODE3,
                                      core_ep->num,
-                                     (uint32_t)(core_ep->buf_addr));
+                                     (ptrdiff_t)(core_ep->buf_addr));
     }
 
     MSS_USB_CIF_rx_ep_enable_irq(core_ep->num);
@@ -812,7 +808,7 @@ static uint8_t MSS_USB_CIF_host_rx_errchk(mss_usb_ep_num_t ep_num)
     if (MSS_USBH_CIF_rx_ep_is_naktimeout_err(ep_num))
     {
         status |= MSS_USB_EP_NAK_TOUT;
-        /* Not clearing NAKTIMEOUT error here. Application may want to abort 
+        /* Not clearing NAKTIMEOUT error here. Application may want to abort
          * transfer. Clearing it here makes Scheduler keep trying the transfer
          */
     }
@@ -842,7 +838,7 @@ static uint8_t MSS_USB_CIF_host_tx_errchk(mss_usb_ep_num_t ep_num)
     if (MSS_USBH_CIF_tx_ep_is_naktimeout_err(ep_num))
     {
         status |= MSS_USB_EP_NAK_TOUT;
-        /* Not clearing NAKTIMEOUT error here. Application may want to abort 
+        /* Not clearing NAKTIMEOUT error here. Application may want to abort
          * transfer. Clearing it here makes Scheduler keep trying the transfer
          */
     }
@@ -913,7 +909,7 @@ static uint8_t MSS_USB_CIF_device_tx_errchk(mss_usb_ep_num_t ep_num)
         status |= TX_EP_STALL_ERROR;
         MSS_USB_CIF_tx_ep_clr_stall_sent_bit(ep_num);
     }
-    
+
     return(status);
 }
 #endif /* MSS_USB_DEVICE_ENABLED */

@@ -1,28 +1,29 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_usb_host_cif.c
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) USB Driver Stack
- *          USB Core Interface Layer (USB-CIFL)
- *            USBH-CIF driver
+ * Microchip PIC64GX MSS USB Driver Stack
+ *      USB Core Interface Layer (USB-CIFL)
+ *          USBH-CIF driver
  *
  * USBH-CIF driver implementation:
  * This file implements MSS USB core initialization in host mode and
  * implements core interface function for the logical layer to control the
  * MSS USB core in USB Host mode.
  *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
-#include "mpfs_hal/mss_hal.h"
-#include "mss_usb_host_cif.h"
-#include "mss_usb_common_cif.h"
-#include "mss_usb_common_reg_io.h"
-#include "mss_usb_core_regs.h"
-#include "mss_usb_host_reg_io.h"
-#include "mss_usb_std_def.h"
+#include "mss_assert.h"
+#include "mss_plic.h"
+#include "coreplex_usb_host_cif.h"
+#include "coreplex_usb_common_cif.h"
+#include "coreplex_usb_common_reg_io.h"
+#include "coreplex_usb_core_regs.h"
+#include "coreplex_usb_host_reg_io.h"
+#include "coreplex_usb_std_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +34,7 @@ extern "C" {
 extern mss_usbh_cb_t g_mss_usbh_cb;
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_init
@@ -44,12 +45,12 @@ MSS_USBH_CIF_init
     MSS_USB_CIF_enable_hs_mode();
     MSS_USB_CIF_clr_usb_irq_reg();
 
-    PLIC_EnableIRQ(USB_DMA_PLIC);
+    PLIC_EnableIRQ(PLIC_USB_DMA_INT_OFFSET);
     MSS_USB_CIF_rx_ep_disable_irq_all();
     MSS_USB_CIF_tx_ep_disable_irq_all();
 
     PLIC_EnableIRQ(USB_MC_PLIC);
-    
+
     /* This was added during Compliance testing */
     USB->C_T_HSBT = 0x01u;
 
@@ -58,7 +59,7 @@ MSS_USBH_CIF_init
 }
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_cep_configure
@@ -107,7 +108,7 @@ MSS_USBH_CIF_tx_ep_configure
 )
 {
     MSS_USB_CIF_tx_ep_clr_csrreg(host_ep->num);
-    
+
     /* Perform host mode configurations here */
     /* TODO: Add AutoSet DMA etc */
     MSS_USBH_CIF_tx_ep_clr_retry_err(host_ep->num);
@@ -162,7 +163,7 @@ MSS_USBH_CIF_rx_ep_configure
 
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_bus_suspend
@@ -184,7 +185,7 @@ MSS_USBH_CIF_bus_suspend
 
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_bus_resume
@@ -201,7 +202,7 @@ MSS_USBH_CIF_bus_resume
 
 
 /***************************************************************************//**
- * 
+ *
  */
 mss_usb_vbus_level_t
 MSS_USBH_CIF_read_vbus_level
@@ -214,7 +215,7 @@ MSS_USBH_CIF_read_vbus_level
 
 
 /***************************************************************************//**
- * 
+ *
  */
 uint32_t
 MSS_USBH_CIF_tx_ep_mp_configure
@@ -264,7 +265,7 @@ MSS_USBH_CIF_tx_ep_mp_configure
 }
 
 /***************************************************************************//**
- * 
+ *
  */
 uint32_t
 MSS_USBH_CIF_rx_ep_mp_configure
@@ -374,7 +375,7 @@ MSS_USBH_CIF_cep_read_pkt
 }
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_cep_abort_xfr
@@ -401,7 +402,7 @@ MSS_USBH_CIF_cep_abort_xfr
 }
 
 /***************************************************************************//**
- * 
+ *
  */
 void
 MSS_USBH_CIF_handle_connect_irq

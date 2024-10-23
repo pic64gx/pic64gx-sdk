@@ -1,18 +1,19 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_uart.c
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) MMUART bare metal
- * software driver implementation.
+ * PIC64GX Microprocessor Subsystem MMUART bare metal software driver
+ * implementation.
  *
  */
 
-#include "mpfs_hal/mss_hal.h"
-#include "mss_uart_regs.h"
 #include "mss_uart.h"
+#include "mss_uart_regs.h"
+#include "mss_plic.h"
+#include "mss_util.h"
+#include "mss_legacy_defines.h"
+#include "bsp_config/bsp_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,7 +55,7 @@ mss_uart_instance_t g_mss_uart4_hi;
  * 4 ==> MMUART4
 
  */
-static uint32_t g_uart_axi_pos = 0x0u;
+static uint8_t g_uart_axi_pos = 0x0u;
 
 /*******************************************************************************
  * Defines
@@ -65,7 +66,6 @@ static uint32_t g_uart_axi_pos = 0x0u;
 #define FCR_TRIG_LEVEL_MASK             0xC0u
 
 #define IIRF_MASK                       0x0Fu
-#define IER_MASK                        0x0Du
 
 #define INVALID_INTERRUPT               0u
 #define INVALID_IRQ_HANDLER             ((mss_uart_irq_handler_t) 0)
@@ -74,12 +74,6 @@ static uint32_t g_uart_axi_pos = 0x0u;
 #define MSS_UART_DATA_READY             ((uint8_t) 0x01)
 
 #define SYNC_ASYNC_MODE_MASK            (0x7u)
-
-#define UART0_POSITION_MASK              0x01u
-#define UART1_POSITION_MASK              0x02u
-#define UART2_POSITION_MASK              0x04u
-#define UART3_POSITION_MASK              0x08u
-#define UART4_POSITION_MASK              0x10u
 
 /*******************************************************************************
  * Possible values for Interrupt Identification Register Field.
@@ -101,7 +95,7 @@ static uint32_t g_uart_axi_pos = 0x0u;
 /*******************************************************************************
  * Local functions.
  */
-static void global_init(mss_uart_instance_t * this_uart, uint32_t baud_rate, 
+static void global_init(mss_uart_instance_t * this_uart, uint32_t baud_rate,
                                                          uint8_t line_config);
 static void uart_isr(mss_uart_instance_t * this_uart);
 static void default_tx_handler(mss_uart_instance_t * this_uart);
@@ -110,7 +104,7 @@ static void disable_irq(const mss_uart_instance_t * this_uart);
 static void config_baud_divisors
 (
     mss_uart_instance_t * this_uart,
-    uint32_t baudrate    
+    uint32_t baudrate
 );
 
 /*******************************************************************************
@@ -119,10 +113,10 @@ static void config_baud_divisors
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_init
 (
-    mss_uart_instance_t* this_uart, 
+    mss_uart_instance_t* this_uart,
     uint32_t baud_rate,
     uint8_t line_config
 )
@@ -138,9 +132,6 @@ MSS_UART_init
 
     /* Disable SmartCard Mode */
     this_uart->hw_reg->MM2 &= ~EERR_MASK;
-
-    /* set default tx handler for automated TX using interrupt in USART mode */
-    this_uart->tx_handler = default_tx_handler;
 }
 
 /***************************************************************************//**
@@ -148,7 +139,7 @@ MSS_UART_init
  */
 void MSS_UART_lin_init
 (
-    mss_uart_instance_t* this_uart, 
+    mss_uart_instance_t* this_uart,
     uint32_t baud_rate,
     uint8_t line_config
 )
@@ -169,10 +160,10 @@ void MSS_UART_lin_init
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_irda_init
 (
-    mss_uart_instance_t* this_uart, 
+    mss_uart_instance_t* this_uart,
     uint32_t baud_rate,
     uint8_t line_config,
     mss_uart_rzi_polarity_t rxpol,
@@ -191,10 +182,10 @@ MSS_UART_irda_init
 
     ((rxpol == MSS_UART_ACTIVE_LOW) ? (this_uart->hw_reg->MM1 &= ~EIRX_MASK) :
                                       (this_uart->hw_reg->MM1 |= EIRX_MASK));
-                                      
+
     ((txpol == MSS_UART_ACTIVE_LOW) ? (this_uart->hw_reg->MM1 &= ~EITX_MASK) :
                                       (this_uart->hw_reg->MM1 |= EITX_MASK));
-                                      
+
     ((pw == MSS_UART_3_BY_16) ? (this_uart->hw_reg->MM1 &= ~EITP_MASK) :
                                       (this_uart->hw_reg->MM1 |= EITP_MASK));
     /* Disable SmartCard Mode */
@@ -204,24 +195,24 @@ MSS_UART_irda_init
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_smartcard_init
 (
-    mss_uart_instance_t* this_uart, 
+    mss_uart_instance_t* this_uart,
     uint32_t baud_rate,
     uint8_t line_config
 )
 {
     /* Perform generic initialization */
     global_init(this_uart, baud_rate, line_config);
-    
+
     /* Disable LIN mode */
     this_uart->hw_reg->MM0 &= ~ELIN_MASK;
 
     /* Disable IrDA mode */
     this_uart->hw_reg->MM1 &= ~EIRD_MASK;
 
-    /* Enable SmartCard Mode : Only when data is 8-bit and 2 stop bits */
+    /* Enable SmartCard Mode : Only when data is 8-bit and 2 stop bits*/
     if ((MSS_UART_DATA_8_BITS | MSS_UART_TWO_STOP_BITS) ==
         (line_config & (MSS_UART_DATA_8_BITS | MSS_UART_TWO_STOP_BITS)))
     {
@@ -281,7 +272,7 @@ MSS_UART_polled_tx
                     char_idx++;
                 }
 
-                /* find the number of bytes remaining(not transmitted yet) */
+                /* Calculate the number of bytes remaining(not transmitted yet)*/
                 temp_tx_size -= size_sent;
             }
         }while (temp_tx_size);
@@ -354,19 +345,18 @@ MSS_UART_irq_tx
 {
     ASSERT(pbuff != ((uint8_t*)0));
     ASSERT(tx_size > 0u);
-    ASSERT(TX_COMPLETE == this_uart->tx_buff_size);
 
-    if ((tx_size > 0u) && 
-        (pbuff != ((uint8_t*)0)) &&
-        (TX_COMPLETE == this_uart->tx_buff_size))
+    if ((tx_size > 0u) && (pbuff != ((uint8_t*)0)))
     {
-        /* Initialize the transmit info for the UART instance with the
-         * arguments */
+        /*Initialize the transmit info for the UART instance with the arguments*/
         this_uart->tx_buffer = pbuff;
         this_uart->tx_buff_size = tx_size;
         this_uart->tx_idx = 0u;
 
-        /* Enables TX interrupt */
+        /* assign default handler for data transfer */
+        this_uart->tx_handler = default_tx_handler;
+
+        /* enables TX interrupt */
         this_uart->hw_reg->IER |= ETBEI_MASK;
         enable_irq(this_uart);
     }
@@ -443,6 +433,8 @@ MSS_UART_enable_irq
 {
     ASSERT(MSS_UART_INVALID_IRQ > irq_mask);
 
+    enable_irq(this_uart);
+
     if (MSS_UART_INVALID_IRQ > irq_mask)
     {
         /* irq_mask encoding: 1- enable
@@ -450,23 +442,20 @@ MSS_UART_enable_irq
          * bit 1 - Transmitter Holding  Register Empty Interrupt
          * bit 2 - Receiver Line Status Interrupt
          * bit 3 - Modem Status Interrupt
-         * 
-         * The use of the IER_MASK macro is to prevent the THRE to be
-         * set at this point of the design flow and to lead to a break
-         * later on.
          */
         this_uart->hw_reg->IER |= ((uint8_t)(((uint32_t)irq_mask &
-                                                         (uint32_t)IER_MASK)));
+                                                            (uint32_t)IIRF_MASK)));
 
-        /* 
+
+        /*
          * bit 4 - Receiver time-out interrupt
          * bit 5 - NACK / ERR signal interrupt
-         * bit 6 - PID parity error interrupt 
+         * bit 6 - PID parity error interrupt
          * bit 7 - LIN break detection interrupt
          * bit 8 - LIN Sync detection interrupt
          */
         this_uart->hw_reg->IEM |= (uint8_t)(((uint32_t)irq_mask >> 4u) &
-                                                         ((uint32_t)IIRF_MASK));
+                                                        ((uint32_t)IIRF_MASK));
     }
 }
 
@@ -498,6 +487,8 @@ MSS_UART_disable_irq
      */
     this_uart->hw_reg->IEM &= (uint8_t)(~(((uint32_t)irq_mask >> 4u) &
                                                         ((uint32_t)IIRF_MASK)));
+
+    disable_irq(this_uart);
 }
 
 /***************************************************************************//**
@@ -551,28 +542,28 @@ MSS_UART_set_loopback
                 /* Disable local loopback */
                 this_uart->hw_reg->MCR &= ~LOOP_MASK;
             break;
-                
+
             case MSS_UART_LOCAL_LOOPBACK_ON:
                 /* Enable local loopback */
                 this_uart->hw_reg->MCR |= LOOP_MASK;
             break;
-            
+
             case MSS_UART_REMOTE_LOOPBACK_OFF:
             case MSS_UART_AUTO_ECHO_OFF:
-                /* Disable remote loopback & automatic echo */
+                /* Disable remote loopback & automatic echo*/
                 this_uart->hw_reg->MCR &= ~(RLOOP_MASK|ECHO_MASK);
             break;
-            
+
             case MSS_UART_REMOTE_LOOPBACK_ON:
                 /* Enable remote loopback */
                 this_uart->hw_reg->MCR |= (1u << RLOOP);
                 break;
-                
+
             case MSS_UART_AUTO_ECHO_ON:
                 /* Enable automatic echo */
                 this_uart->hw_reg->MCR |= (1u << ECHO);
             break;
-                
+
             case MSS_UART_INVALID_LOOPBACK:
                 /* Fall through to default. */
             default:
@@ -587,7 +578,7 @@ MSS_UART_set_loopback
  */
 uint8_t mmuart0_plic_77_IRQHandler(void)
 {
-    if (g_uart_axi_pos & UART0_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart0_hi);
     }
@@ -601,7 +592,7 @@ uint8_t mmuart0_plic_77_IRQHandler(void)
 
 uint8_t mmuart1_plic_IRQHandler(void)
 {
-    if (g_uart_axi_pos & UART1_POSITION_MASK)
+    if (g_uart_axi_pos & 0x02u)
     {
         uart_isr(&g_mss_uart1_hi);
     }
@@ -615,7 +606,7 @@ uint8_t mmuart1_plic_IRQHandler(void)
 
 uint8_t mmuart2_plic_IRQHandler(void)
 {
-    if (g_uart_axi_pos & UART2_POSITION_MASK)
+    if (g_uart_axi_pos & 0x04u)
     {
         uart_isr(&g_mss_uart2_hi);
     }
@@ -629,7 +620,7 @@ uint8_t mmuart2_plic_IRQHandler(void)
 
 uint8_t mmuart3_plic_IRQHandler(void)
 {
-    if (g_uart_axi_pos & UART3_POSITION_MASK)
+    if (g_uart_axi_pos & 0x08u)
     {
         uart_isr(&g_mss_uart3_hi);
     }
@@ -643,7 +634,7 @@ uint8_t mmuart3_plic_IRQHandler(void)
 
 uint8_t mmuart4_plic_IRQHandler(void)
 {
-    if (g_uart_axi_pos & UART4_POSITION_MASK)
+    if (g_uart_axi_pos & 0x10u)
     {
         uart_isr(&g_mss_uart4_hi);
     }
@@ -657,7 +648,7 @@ uint8_t mmuart4_plic_IRQHandler(void)
 
 void mmuart0_e51_local_IRQHandler_11(void)
 {
-    if (g_uart_axi_pos & UART0_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart0_hi);
     }
@@ -669,7 +660,7 @@ void mmuart0_e51_local_IRQHandler_11(void)
 
 void mmuart_u54_h1_local_IRQHandler_11(void)
 {
-    if (g_uart_axi_pos & UART1_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart1_hi);
     }
@@ -681,7 +672,7 @@ void mmuart_u54_h1_local_IRQHandler_11(void)
 
 void mmuart_u54_h2_local_IRQHandler_11(void)
 {
-    if (g_uart_axi_pos & UART2_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart2_hi);
     }
@@ -693,7 +684,7 @@ void mmuart_u54_h2_local_IRQHandler_11(void)
 
 void mmuart_u54_h3_local_IRQHandler_11(void)
 {
-    if (g_uart_axi_pos & UART3_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart3_hi);
     }
@@ -705,7 +696,7 @@ void mmuart_u54_h3_local_IRQHandler_11(void)
 
 void mmuart_u54_h4_local_IRQHandler_11(void)
 {
-    if (g_uart_axi_pos & UART4_POSITION_MASK)
+    if (g_uart_axi_pos & 0x01u)
     {
         uart_isr(&g_mss_uart4_hi);
     }
@@ -748,13 +739,19 @@ MSS_UART_set_tx_handler
     mss_uart_irq_handler_t handler
 )
 {
-    if (handler != NULL_HANDLER)
+    ASSERT(handler != INVALID_IRQ_HANDLER);
+
+    if (handler != INVALID_IRQ_HANDLER)
     {
         this_uart->tx_handler = handler;
-    }
-    else
-    {
-        this_uart->tx_handler = default_tx_handler;
+
+        /* Make TX buffer info invalid */
+        this_uart->tx_buffer = (const uint8_t*)0;
+        this_uart->tx_buff_size = 0u;
+
+        /* Enable transmitter holding register Empty interrupt. */
+        this_uart->hw_reg->IER |= ETBEI_MASK;
+        enable_irq(this_uart);
     }
 }
 
@@ -894,12 +891,12 @@ MSS_UART_get_tx_status
     /* Read the Line Status Register and update the sticky record. */
     status = this_uart->hw_reg->LSR;
     this_uart->status |= status;
-    
+
     /*
      * Extract the transmit status bits from the UART's Line Status Register.
-     * Bit 5 - Transmitter Holding Register/FIFO Empty (THRE) status. 
+     * Bit 5 - Transmitter Holding Register/FIFO Empty (THRE) status.
                (If = 1, TX FIFO is empty)
-     * Bit 6 - Transmitter Empty (TEMT) status. 
+     * Bit 6 - Transmitter Empty (TEMT) status.
                (If = 1, both TX FIFO and shift register are empty)
      */
     status &= (MSS_UART_THRE | MSS_UART_TEMT);
@@ -1046,7 +1043,7 @@ MSS_UART_set_rx_timeout_handler
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_enable_half_duplex
 (
     mss_uart_instance_t * this_uart
@@ -1059,7 +1056,7 @@ MSS_UART_enable_half_duplex
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_disable_half_duplex
 (
     mss_uart_instance_t * this_uart
@@ -1076,7 +1073,7 @@ void
 MSS_UART_set_rx_endian
 (
     mss_uart_instance_t * this_uart,
-    mss_uart_endian_t endian    
+    mss_uart_endian_t endian
 )
 {
     ASSERT(MSS_UART_INVALID_ENDIAN > endian);
@@ -1085,7 +1082,7 @@ MSS_UART_set_rx_endian
     {
         /* Configure MSB first / LSB first for receiver */
         ((MSS_UART_LITTLEEND == endian) ? (this_uart->hw_reg->MM1 &= ~E_MSB_RX_MASK) :
-                                     (this_uart->hw_reg->MM1 |= E_MSB_RX_MASK));
+                                          (this_uart->hw_reg->MM1 |= E_MSB_RX_MASK));
     }
 }
 
@@ -1096,7 +1093,7 @@ void
 MSS_UART_set_tx_endian
 (
     mss_uart_instance_t * this_uart,
-    mss_uart_endian_t endian    
+    mss_uart_endian_t endian
 )
 {
     ASSERT(MSS_UART_INVALID_ENDIAN > endian);
@@ -1105,7 +1102,7 @@ MSS_UART_set_tx_endian
     {
         /* Configure MSB first / LSB first for transmitter */
         ((MSS_UART_LITTLEEND == endian) ? (this_uart->hw_reg->MM1 &= ~E_MSB_TX_MASK) :
-                                    (this_uart->hw_reg->MM1 |= E_MSB_TX_MASK));
+                                          (this_uart->hw_reg->MM1 |= E_MSB_TX_MASK)) ;
     }
 }
 
@@ -1120,7 +1117,7 @@ MSS_UART_set_filter_length
 )
 {
     ASSERT(MSS_UART_INVALID_FILTER_LENGTH > length);
-    
+
     if (MSS_UART_INVALID_FILTER_LENGTH > length)
     {
         /* Configure glitch filter length */
@@ -1186,7 +1183,7 @@ MSS_UART_disable_afclear
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_enable_rx_timeout
 (
     mss_uart_instance_t * this_uart,
@@ -1203,20 +1200,20 @@ MSS_UART_enable_rx_timeout
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_disable_rx_timeout
 (
     mss_uart_instance_t * this_uart
 )
 {
-    /* Disable receiver time-out */
+    /*Disable receiver time-out */
     this_uart->hw_reg->MM0 &= ~ERTO_MASK;
 }
 
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_enable_tx_time_guard
 (
     mss_uart_instance_t * this_uart,
@@ -1226,20 +1223,20 @@ MSS_UART_enable_tx_time_guard
     /* Load the transmitter time guard value */
     this_uart->hw_reg->TTG = timeguard;
 
-    /* Enable transmitter time guard */
+    /*Enable transmitter time guard */
     this_uart->hw_reg->MM0 |= ETTG_MASK;
 }
 
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_disable_tx_time_guard
 (
     mss_uart_instance_t * this_uart
 )
 {
-    /* Disable transmitter time guard */
+    /*Disable transmitter time guard */
     this_uart->hw_reg->MM0 &= ~ETTG_MASK;
 }
 
@@ -1259,11 +1256,11 @@ MSS_UART_set_address
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_set_ready_mode
 (
     mss_uart_instance_t * this_uart,
-    mss_uart_ready_mode_t mode    
+    mss_uart_ready_mode_t mode
 )
 {
     ASSERT(MSS_UART_INVALID_READY_MODE > mode);
@@ -1272,14 +1269,14 @@ MSS_UART_set_ready_mode
     {
         /* Configure mode 0 or mode 1 for TXRDY and RXRDY */
         ((MSS_UART_READY_MODE0 == mode) ? (this_uart->hw_reg->FCR &= ~RDYMODE_MASK) :
-                                     (this_uart->hw_reg->FCR |= RDYMODE_MASK) );
+                                 (this_uart->hw_reg->FCR |= RDYMODE_MASK) );
     }
 }
 
 /***************************************************************************//**
  * See mss_uart.h for details of how to use this function.
  */
-void 
+void
 MSS_UART_set_usart_mode
 (
     mss_uart_instance_t * this_uart,
@@ -1290,7 +1287,7 @@ MSS_UART_set_usart_mode
 
     if (MSS_UART_INVALID_SYNC_MODE > mode)
     {
-        /* Nothing to do for the baudrate: 
+        /* Nothing to do for the baudrate:
                                 operates at PCLK / 2 + glitch filter length */
         /* Clear the ESYN bits 2:0 */
         this_uart->hw_reg->MM0 &= ~SYNC_ASYNC_MODE_MASK;
@@ -1304,15 +1301,13 @@ MSS_UART_set_usart_mode
 void
 MSS_UART_enable_local_irq
 (
-    mss_uart_instance_t * this_uart
+    const mss_uart_instance_t * this_uart
 )
 {
-    /* Make sure to disable interrupt on PLIC as it might have been enabled
+    /*Make sure to disable interrupt on PLIC as it might have been enabled
      * when application registered an interrupt handler function or
      * used MSS_UART_enable_irq() to enable PLIC interrupt */
     disable_irq(this_uart);
-
-    this_uart->local_irq_enabled = 1u;
 
     /* Enable local interrupt UART instance.
      * Local interrupt will be enabled on the HART on which the application
@@ -1322,7 +1317,7 @@ MSS_UART_enable_local_irq
 
 /*******************************************************************************
  * Local Functions
- ******************************************************************************/
+ *******************************************************************************/
 /*******************************************************************************
  * Global initialization for all modes
  */
@@ -1395,7 +1390,7 @@ static void global_init
     }
     else
     {
-        ASSERT(0); /* Comment to avoid LDRA warning */
+        ASSERT(0); /*Comment to avoid LDRA warning*/
     }
 
     /* disable interrupts */
@@ -1449,8 +1444,8 @@ static void global_init
 
     /* set default RX timeout */
     this_uart->hw_reg->RTO = 0u;
-    
-    /* 
+
+    /*
      * Configure baud rate divisors. This uses the fractional baud rate divisor
      * where possible to provide the most accurate baud rat possible.
      */
@@ -1471,13 +1466,11 @@ static void global_init
     this_uart->tx_handler       = NULL_HANDLER;
     this_uart->linests_handler  = NULL_HANDLER;
     this_uart->modemsts_handler = NULL_HANDLER;
-    this_uart->rto_handler      = NULL_HANDLER;    
-    this_uart->nack_handler     = NULL_HANDLER;   
+    this_uart->rto_handler      = NULL_HANDLER;
+    this_uart->nack_handler     = NULL_HANDLER;
     this_uart->pid_pei_handler  = NULL_HANDLER;
-    this_uart->break_handler    = NULL_HANDLER;    
-    this_uart->sync_handler     = NULL_HANDLER;   
-
-    this_uart->local_irq_enabled = 0u;
+    this_uart->break_handler    = NULL_HANDLER;
+    this_uart->sync_handler     = NULL_HANDLER;
 
     /* Initialize the sticky status */
     this_uart->status = 0u;
@@ -1501,7 +1494,8 @@ config_baud_divisors
 
     this_uart->baudrate = baudrate;
 
-    pclk_freq = LIBERO_SETTING_MSS_APB_AHB_CLK;
+    /* Use the system clock value from hw_platform.h */
+    pclk_freq = BSP_SETTING_MSS_APB_AHB_CLK;
 
     /*
      * Compute baud value based on requested baud rate and PCLK frequency.
@@ -1522,14 +1516,15 @@ config_baud_divisors
     {
         if (baud_value > 1u)
         {
-            /* Use Fractional baud rate divisors */
+            /*
+             * Use Fractional baud rate divisors
+             */
             /* set divisor latch */
             this_uart->hw_reg->LCR |= DLAB_MASK;
 
-            /* MSB of baud value */
+            /* msb of baud value */
             this_uart->hw_reg->DMR = (uint8_t)(baud_value >> 8);
-
-            /* LSB of baud value */
+            /* lsb of baud value */
             this_uart->hw_reg->DLR = (uint8_t)baud_value;
 
             /* reset divisor latch */
@@ -1544,14 +1539,16 @@ config_baud_divisors
         }
         else
         {
-            /* Do NOT use Fractional baud rate divisors. */
+            /*
+             * Do NOT use Fractional baud rate divisors.
+             */
             /* set divisor latch */
             this_uart->hw_reg->LCR |= DLAB_MASK;
 
-            /* MSB of baud value */
+            /* msb of baud value */
             this_uart->hw_reg->DMR = (uint8_t)(baud_value >> 8u);
 
-            /* LSB of baud value */
+            /* lsb of baud value */
             this_uart->hw_reg->DLR = (uint8_t)baud_value;
 
             /* reset divisor latch */
@@ -1600,11 +1597,6 @@ uart_isr
             {
                 (*(this_uart->tx_handler))(this_uart);
             }
-            if (this_uart->tx_idx == this_uart->tx_buff_size)
-            {
-                MSS_UART_disable_irq(this_uart, MSS_UART_TBE_IRQ);
-                this_uart->tx_buff_size = TX_COMPLETE;
-            }
         }
         break;
 
@@ -1645,7 +1637,7 @@ uart_isr
             }
 
             /* NACK interrupt */
-            if (this_uart->hw_reg->IIM & ENACKI_MASK)
+            if (this_uart->hw_reg->IIM &ENACKI)
             {
                 ASSERT(NULL_HANDLER != this_uart->nack_handler);
 
@@ -1656,7 +1648,7 @@ uart_isr
             }
 
             /* PID parity error interrupt */
-            if (this_uart->hw_reg->IIM & EPID_PEI_MASK)
+            if (this_uart->hw_reg->IIM & EPID_PEI)
             {
                 ASSERT(NULL_HANDLER != this_uart->pid_pei_handler);
 
@@ -1667,7 +1659,7 @@ uart_isr
             }
 
             /* LIN break detection interrupt */
-            if (this_uart->hw_reg->IIM & ELINBI_MASK)
+            if (this_uart->hw_reg->IIM & ELINBI)
             {
                 ASSERT(NULL_HANDLER != this_uart->break_handler);
 
@@ -1678,7 +1670,7 @@ uart_isr
             }
 
             /* LIN Sync detection interrupt */
-            if (this_uart->hw_reg->IIM & ELINSI_MASK)
+            if (this_uart->hw_reg->IIM & ELINSI)
             {
                 ASSERT(NULL_HANDLER != this_uart->sync_handler);
 
@@ -1691,7 +1683,7 @@ uart_isr
         }
         default:
         {
-            ASSERT(INVALID_INTERRUPT); /* Comment to avoid LDRA warning */
+            ASSERT(INVALID_INTERRUPT); /*Alternative case has been considered*/
         }
         break;
     }
@@ -1742,6 +1734,15 @@ default_tx_handler
                 ++this_uart->tx_idx;
             }
         }
+
+        /* Flag Tx as complete if all data has been pushed into the Tx FIFO. */
+        if (this_uart->tx_idx == this_uart->tx_buff_size)
+        {
+            this_uart->tx_buff_size = TX_COMPLETE;
+
+            /* disables TX interrupt */
+            this_uart->hw_reg->IER &= ~ETBEI_MASK;
+        }
     }
 }
 
@@ -1753,36 +1754,33 @@ enable_irq
 {
     PLIC_IRQn_Type plic_num = 0;
 
-    if(0u == this_uart->local_irq_enabled)
+    if (((&g_mss_uart0_lo == this_uart)) || ((&g_mss_uart0_hi == this_uart)))
     {
-        if (((&g_mss_uart0_lo == this_uart)) || ((&g_mss_uart0_hi == this_uart)))
-        {
-            plic_num = MMUART0_PLIC_77;
-        }
-        else if (((&g_mss_uart1_lo == this_uart)) || ((&g_mss_uart1_hi == this_uart)))
-        {
-            plic_num = MMUART1_PLIC;
-        }
-        else if (((&g_mss_uart2_lo == this_uart)) || ((&g_mss_uart2_hi == this_uart)))
-        {
-            plic_num = MMUART2_PLIC;
-        }
-        else if (((&g_mss_uart3_lo == this_uart)) || ((&g_mss_uart3_hi == this_uart)))
-        {
-            plic_num = MMUART3_PLIC;
-        }
-        else if (((&g_mss_uart4_lo == this_uart)) || ((&g_mss_uart4_hi == this_uart)))
-        {
-            plic_num = MMUART4_PLIC;
-        }
-        else
-        {
-            ASSERT(0); /* Comment to avoid LDRA warning */
-        }
-
-        /* Enable UART instance interrupt in PLIC. */
-        PLIC_EnableIRQ(plic_num);
+        plic_num = MMUART0_PLIC_77;
     }
+    else if (((&g_mss_uart1_lo == this_uart)) || ((&g_mss_uart1_hi == this_uart)))
+    {
+        plic_num = MMUART1_PLIC;
+    }
+    else if (((&g_mss_uart2_lo == this_uart)) || ((&g_mss_uart2_hi == this_uart)))
+    {
+        plic_num = MMUART2_PLIC;
+    }
+    else if (((&g_mss_uart3_lo == this_uart)) || ((&g_mss_uart3_hi == this_uart)))
+    {
+        plic_num = MMUART3_PLIC;
+    }
+    else if (((&g_mss_uart4_lo == this_uart)) || ((&g_mss_uart4_hi == this_uart)))
+    {
+        plic_num = MMUART4_PLIC;
+    }
+    else
+    {
+        ASSERT(0); /*Alternative case has been considered*/
+    }
+
+    /* Enable UART instance interrupt in PLIC. */
+    PLIC_EnableIRQ(plic_num);
 }
 
 static void
@@ -1815,7 +1813,7 @@ disable_irq
     }
     else
     {
-        ASSERT(0); /* Comment to avoid LDRA warning */
+        ASSERT(0); /*Alternative case has been considered*/
     }
 
     /* Disable UART instance interrupt in PLIC. */
