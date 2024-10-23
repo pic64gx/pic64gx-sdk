@@ -1,24 +1,61 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_mmc_types.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) eMMC SD driver data
- * structures.
+ *  PIC64GX MSS eMMC SD driver data structures.
  *
- * This eMMC Interface header file provides a subset of definitions from the
- * eMMC protocol JESD84-B51
+ * This eMMC Interface header file provides a subset of definitions from the eMMC
+ * protocol JESD84-B51
  *
+ * SVN $Revision: 12579 $
+ * SVN $Date: 2019-12-04 16:41:30 +0530 (Wed, 04 Dec 2019) $
  */
 
-#ifndef MSS_MMC_TYPE_H
-#define MSS_MMC_TYPE_H
+#ifndef __MSS_MMC_TYPE_H
+#define __MSS_MMC_TYPE_H
 
 #ifdef __cplusplus
 extern "C"
 #endif
+
+#include "config.h"
+#include "hal/cpu_types.h"
+#include <assert.h>
+
+//
+// We're going to use a trick to allow us have a macro with 1 or 2 arguments
+// This allows us to turn on and off a timeout easily...
+//
+// The expect flow is:
+//     mHSS_DECLARE_TIMEOUT(my_timeout);
+//     mMMC_ARM_TIMEOUT(my_timeout);
+//     mMMC_CHECK_TIMEOUT(my_timeout);
+//
+#ifdef CONFIG_SERVICE_MMC_SPIN_TIMEOUT
+#  ifdef CONFIG_SERVICE_MMC_SPIN_TIMEOUT_ASSERT
+#    define mMMC_CHECK_TIMEOUT_1(VAR) { VAR--; assert(VAR != 0u); }
+#    define mMMC_CHECK_TIMEOUT_2(VAR, VALUE) { mMMC_CHECK_TIMEOUT_1(VAR); }
+#  else
+#    define mMMC_CHECK_TIMEOUT_1(VAR) { VAR--; if (VAR == 0u) { return; } }
+#    define mMMC_CHECK_TIMEOUT_2(VAR, VALUE) { VAR--; if (VAR == 0u) { return VALUE; } }
+#  endif
+#  define mMMC_CHECK_TIMEOUT_0() { ASSERT(0==1); }
+#  define mMMC_CHECK_TIMEOUT_X(x, VAR, VALUE, FUNC, ...) FUNC
+#  define mMMC_CHECK_TIMEOUT(...) \
+          mMMC_CHECK_TIMEOUT_X(,##__VA_ARGS__,\
+                               mMMC_CHECK_TIMEOUT_2(__VA_ARGS__),\
+                               mMMC_CHECK_TIMEOUT_1(__VA_ARGS__),\
+                               mMMC_CHECK_TIMEOUT_0(__VA_ARGS__))
+#  define mMMC_DECLARE_TIMEOUT(VAR) uint64_t VAR
+#  define mMMC_ARM_TIMEOUT(VAR) VAR = (uint64_t)CONFIG_SERVICE_MMC_SPIN_TIMEOUT_MAX_SPINS
+#else
+#  define mMMC_CHECK_TIMEOUT(...) { ; }
+#  define mMMC_DECLARE_TIMEOUT(...) { ; }
+#  define mMMC_ARM_TIMEOUT(...) { ; }
+#endif
+
+
 
 /***************************************************************************//**
  * Macro Definitions
@@ -52,9 +89,6 @@ extern "C"
 #define MMC_CMD_1_SEND_OP_COND              1u     /* R3  Rsp       */
 #define MMC_CMD_39_FAST_IO                  39u    /* R4  Rsp       */
 #define MMC_CMD_40_GO_IRQ_STATE             40u    /* R5  Rsp       */
-#define MMC_CMD_35_ERASE_GROUP_START        35u    /* R1 Rsp        */
-#define MMC_CMD_36_ERASE_GROUP_END          36u    /* R1 Rsp        */
-#define MMC_CMD_38_ERASE                    38u    /* R1b Rsp        */
 
 #define SD_CMD_8_SEND_IF_COND               8u     /* R7 Rsp        */
 #define SD_ACMD_41_SEND_OP_COND             41u    /* R3 Rsp        */
@@ -62,8 +96,6 @@ extern "C"
 
 #define SD_CMD_11_VOLAGE_SWITCH             11u    /* R1 Rsp        */
 #define SD_CMD_19_SEND_TUNING_BLK           19u    /* R1 Rsp        */
-#define SD_CMD_32_ERASE_WR_BLK_START        32u    /* R1 Rsp        */
-#define SD_CMD_33_ERASE_WR_BLK_END          33u    /* R1 Rsp        */
 #define SD_CMD_55                           55u
 
 #define SD_CMD_5                            5u    /* R4 Rsp        */
@@ -247,4 +279,4 @@ typedef enum
 }
 #endif
 
-#endif  /* MSS_MMC_TYPE_H */
+#endif  /* __MSS_MMC_TYPE_H */

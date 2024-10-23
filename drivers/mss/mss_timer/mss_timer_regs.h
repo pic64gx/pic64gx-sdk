@@ -1,27 +1,26 @@
-/*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ /*******************************************************************************
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_timer_regs.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Register bit offsets and masks definitions for PolarFire SoC
- * Microprocessor Subsystem (MSS) Timer
+ * Register bit offsets and masks definitions for PIC64GX MSS Timer
  *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
-#ifndef MSS_TIMER_REGS_H_
-#define MSS_TIMER_REGS_H_
+#ifndef __PSE_TIMER_REG_H_
+#define __PSE_TIMER_REG_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 /*----------------------------------------------------------------------------*/
-/*--------------------------MPFS MSS Timer register map-----------------------*/
+/*--------------------------PSE MSS Timer register map------------------------*/
 /*----------------------------------------------------------------------------*/
 typedef struct
 {
-    /* Timer 1 register declaration */
+	/*Timer 1 register declaration*/
     const volatile  uint32_t TIM1_VAL;
     volatile uint32_t TIM1_LOADVAL;
     volatile uint32_t TIM1_BGLOADVAL;
@@ -29,7 +28,7 @@ typedef struct
     volatile uint32_t TIM1_RIS;
     const volatile  uint32_t TIM1_MIS;
 
-    /* Timer 2 register declaration */
+    /*Timer 2 register declaration*/
     const volatile  uint32_t TIM2_VAL;
     volatile uint32_t TIM2_LOADVAL;
     volatile uint32_t TIM2_BGLOADVAL;
@@ -37,7 +36,7 @@ typedef struct
     volatile uint32_t TIM2_RIS;
     const volatile  uint32_t TIM2_MIS;
 
-    /* Timer 64 register declaration */
+    /*Timer 64 register declaration*/
     const volatile  uint32_t TIM64_VAL_U;
     const volatile  uint32_t TIM64_VAL_L;
     volatile uint32_t TIM64_LOADVAL_U;
@@ -61,4 +60,4 @@ typedef struct
 }
 #endif
 
-#endif  /* MSS_TIMER_REGS_H_ */
+#endif  /* __PSE_TIMER_REG_H_ */

@@ -1,20 +1,19 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file phy.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Register bit definitions for MII STA (station management entity)
- * standard interface. All basic MII register bits and enhanced capability
- * register bits are defined.
+ * Register bit definitions for MII STA (station management entity) standard
+ * interface. All basic MII register bits and enhanced capability register bits
+ * are defined.
  * Complies with Clauses 22, 28, 37, 40 of IEEE RFC 802.3
- * 
+ *
+ * SVN $Revision$
+ * SVN $Date$
  */
-
 #ifndef PSE_PHY_H
 #define PSE_PHY_H
-#include "../mss_ethernet_mac/mss_ethernet_mac_types.h"
+#include "../mss_mac/mss_ethernet_mac_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,8 +33,8 @@ extern "C" {
 #define MII_ADVERTISE           (0X04U)    /* Advertisement control reg   */
 #define MII_LPA                 (0X05U)    /* Link partner ability reg    */
 #define MII_EXPANSION           (0X06U)    /* Expansion register          */
-#define MII_NPAR                (0X07U)   
-#define MII_LPNPA               (0X08U)    
+#define MII_NPAR                (0X07U)
+#define MII_LPNPA               (0X08U)
 #define MII_CTRL1000            (0X09U)    /* 1000BASE-T control          */
 #define MII_STAT1000            (0X0AU)    /* 1000BASE-T status           */
 #define MII_ESTATUS             (0X0FU)    /* Extended Status */
@@ -50,9 +49,9 @@ extern "C" {
 #define MII_RESV2               (0X1AU)    /* Reserved...                 */
 #define MII_TPISTATUS           (0X1BU)    /* TPI status for 10mbps       */
 #define MII_NCONFIG             (0X1CU)    /* Network interface config    */
-#define MII_LMCS                (0X1DU)    
-#define MII_PHYCTRL1            (0X1EU)    
-#define MII_PHYCTRL2            (0X1FU)    
+#define MII_LMCS                (0X1DU)
+#define MII_PHYCTRL1            (0X1EU)
+#define MII_PHYCTRL2            (0X1FU)
 
 #define MII_TI_REGCR            (0X0DU)
 #define MII_TI_ADDAR            (0X0EU)
@@ -232,13 +231,7 @@ extern "C" {
 
 /* Different PHY MDIO addresses for our current designs */
 
-#if defined(CONFIG_xTARGET_ALOE)
 #define PHY_VSC8541_MDIO_ADDR (0U)  /* Aloe board PHY */
-#else
-#define PHY_VSC8541_MDIO_ADDR (26U)  /* SVG MSS board PHY */
-#endif
-#define PHY_VSC8662_0_MDIO_ADDR (8U)  /* SVG MSS board port 0 */
-#define PHY_VSC8662_1_MDIO_ADDR (9U)  /* SVG MSS board port 1 */
 #define PHY_VSC8575_MDIO_ADDR (4U)  /* G5 SoC Emulation Platform Peripheral Daughter Board PHY */
 #define PHY_DP83867_MDIO_ADDR (3U)  /* G5 SoC Emulation Platform native PHY */
 #define PHY_NULL_MDIO_ADDR    (0U)  /* No PHY here actually... */
@@ -260,10 +253,6 @@ void MSS_MAC_VSC8541_phy_init(/* mss_mac_instance_t */ const void *v_this_mac, u
 void MSS_MAC_VSC8575_phy_init(/* mss_mac_instance_t */ const void *v_this_mac, uint8_t phy_addr);
 #endif
 
-#if MSS_MAC_USE_PHY_VSC8662
-void MSS_MAC_VSC8662_phy_init(/* mss_mac_instance_t */ const void *v_this_mac, uint8_t phy_addr);
-#endif
-
 #if MSS_MAC_USE_PHY_DP83867
 void MSS_MAC_DP83867_phy_init(/* mss_mac_instance_t */ const void *v_this_mac, uint8_t phy_addr);
 #endif
@@ -273,58 +262,45 @@ void MSS_MAC_NULL_phy_init(/* mss_mac_instance_t */ const void *v_this_mac, uint
 #endif
 
 /***************************************************************************//**
- 
+
  */
 #if MSS_MAC_USE_PHY_VSC8541
-void MSS_MAC_VSC8541_phy_set_link_speed(/* mss_mac_instance_t*/ void *v_this_mac, uint32_t speed_duplex_select, mss_mac_speed_mode_t speed_mode);
+void MSS_MAC_VSC8541_phy_set_link_speed(/* mss_mac_instance_t */ const void *v_this_mac, uint32_t speed_duplex_select);
 #endif
 
 #if MSS_MAC_USE_PHY_VSC8575 || MSS_MAC_USE_PHY_VSC8575_LITE
-void MSS_MAC_VSC8575_phy_set_link_speed(/* mss_mac_instance_t */ void *v_this_mac, uint32_t speed_duplex_select, mss_mac_speed_mode_t speed_mode);
-#endif
-
-#if MSS_MAC_USE_PHY_VSC8662
-void MSS_MAC_VSC8662_phy_set_link_speed(/* mss_mac_instance_t */ void *v_this_mac, uint32_t speed_duplex_select, mss_mac_speed_mode_t speed_mode);
+void MSS_MAC_VSC8575_phy_set_link_speed(/* mss_mac_instance_t */ const void *v_this_mac, uint32_t speed_duplex_select);
 #endif
 
 #if MSS_MAC_USE_PHY_DP83867
-void MSS_MAC_DP83867_phy_set_link_speed(/* mss_mac_instance_t */ void *v_this_mac, uint32_t speed_duplex_select, mss_mac_speed_mode_t speed_mode);
+void MSS_MAC_DP83867_phy_set_link_speed(/* mss_mac_instance_t */ const void *v_this_mac, uint32_t speed_duplex_select);
 #endif
 
 #if MSS_MAC_USE_PHY_NULL
-void MSS_MAC_NULL_phy_set_link_speed(/* mss_mac_instance_t */ void *v_this_mac, uint32_t speed_duplex_select, mss_mac_speed_mode_t speed_mode);
+void MSS_MAC_NULL_phy_set_link_speed(/* mss_mac_instance_t */ const void *v_this_mac, uint32_t speed_duplex_select);
 #endif
 
 /***************************************************************************//**
- 
+
  */
 #if MSS_MAC_USE_PHY_VSC8541
 void MSS_MAC_VSC8541_phy_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-void MSS_MAC_VSC8541_mac_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
 #endif
 
 #if MSS_MAC_USE_PHY_VSC8575 || MSS_MAC_USE_PHY_VSC8575_LITE
 void MSS_MAC_VSC8575_phy_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-void MSS_MAC_VSC8575_mac_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-#endif
-
-#if MSS_MAC_USE_PHY_VSC8662
-void MSS_MAC_VSC8662_phy_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-void MSS_MAC_VSC8662_mac_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
 #endif
 
 #if MSS_MAC_USE_PHY_DP83867
 void MSS_MAC_DP83867_phy_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-void MSS_MAC_DP83867_mac_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-
 #endif
 
 #if MSS_MAC_USE_PHY_NULL
 void MSS_MAC_NULL_phy_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
-void MSS_MAC_NULL_phy_mac_autonegotiate(/* mss_mac_instance_t */ const void *v_this_mac);
 #endif
+
 /***************************************************************************//**
- 
+
  */
 
 #if MSS_MAC_USE_PHY_VSC8541
@@ -338,15 +314,6 @@ uint8_t MSS_MAC_VSC8541_phy_get_link_status
 
 #if MSS_MAC_USE_PHY_VSC8575 || MSS_MAC_USE_PHY_VSC8575_LITE
 uint8_t MSS_MAC_VSC8575_phy_get_link_status
-(
-    /* mss_mac_instance_t */ const void *v_this_mac,
-    mss_mac_speed_t * speed,
-    uint8_t * fullduplex
-);
-#endif
-
-#if MSS_MAC_USE_PHY_VSC8662
-uint8_t MSS_MAC_VSC8662_phy_get_link_status
 (
     /* mss_mac_instance_t */ const void *v_this_mac,
     mss_mac_speed_t * speed,

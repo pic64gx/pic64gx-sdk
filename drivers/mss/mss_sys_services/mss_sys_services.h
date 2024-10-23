@@ -1,27 +1,42 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_sys_services.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) System Services bare
- * metal driver implementation.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ *
+ * PIC64GX Microprocessor Subsystem(MSS) system services bare metal driver
+ * implementation.
  */
 
 /*=========================================================================*//**
-  @mainpage PolarFire SoC MSS System services Bare Metal Driver
+  @mainpage PIC64GX MSS System services Bare Metal Driver
 
   ==============================================================================
   Introduction
   ==============================================================================
-  The PolarFire SoC system services are the services offered by the system
-  controller. These services can be requested by PolarFire SoC MSS over System
+  The PIC64GX system services are the services offered by the system
+  controller. These services can be requested by PIC64GX MSS over System
   Controller Bus (SCB). The MSS appears as SCB master over the SCB bus. MSS can
-  communicate with system controller over SCB by write/read to the MSS SCB
-  register space. The PolarFire SoC system service driver software provides a
-  set of functions for controlling the PolarFire SoC system services as part of
+  communicate with security controller over SCB by write/read to the MSS SCB
+  register space. The PIC64GX system service driver software provides a
+  set of functions for controlling the PIC64GX system services as part of
   a bare-metal system where no operating system is available. It can be adapted
   to be used as a part of an operating system, but the implementation of the
   adaptation layer between this driver and the operating system's driver model
@@ -30,29 +45,28 @@
   ==============================================================================
   Hardware Flow Dependencies
   ==============================================================================
-  The configuration of all the features of the PolarFire SoC MSS system services
+  The configuration of all the features of the PIC64GX MSS system services
   is covered by this driver. Besides, this driver does not require any other
   configuration. It relies on SCB register access interface to communicate with
-  system controller.
+  security controller.
   The base address and register addresses are defined in this driver as
-  constants. The interrupt number assigned are defined as constants in the MPFS
-  HAL. Ensure that the latest MPFS HAL is included in the project settings of
-  the SoftConsole toolchain and that it is generated into your project.
+  constants. The interrupt number assigned are defined as constants in the PIC64GX
+  HAL. 
 
   ==============================================================================
   Theory of Operation
   ==============================================================================
-  The PolarFire SoC system services are the services offered by the system
-  controller. These services can be requested by PolarFire SoC MSS over System
+  The PIC64GX system services are the services offered by the system
+  controller. These services can be requested by PIC64GX MSS over System
   Controller Bus (SCB). The MSS appears as SCB master over the SCB bus. MSS can
-  communicate with the system controller over SCB by accessing the MSS SCB
+  communicate with the security controller over SCB by accessing the MSS SCB
   register space. Requesting a system service over the SCB bus involves a
   command/response sequence to transfer a system service command from the MSS to
-  the system controller and to transfer status back from the system controller
+  the security controller and to transfer status back from the security controller
   to the MSS. The MSS SCB register space also provides access to the mailbox.
   The mailbox is used for passing data related to the system service between the
-  MSS and system controller in both directions.
-  On completion of service, the system controller also writes a status code
+  MSS and security controller in both directions.
+  On completion of service, the security controller also writes a status code
   indicating the successful completion of the system service or an error code
   into the status register.
 
@@ -60,18 +74,15 @@
     -  Device and design information services
     -  Design services
     -  Data security services
-    -  Fabric services
     -  MSS services
 
   -----------------------------------------------------------------------------
     Device and Design Information Services
   -----------------------------------------------------------------------------
-  The PolarFire SoC system service driver can be used to read information about
-  the device on which it is being executed and the current fabric design by
-  making a call to the following functions.
+  The PIC64GX system service driver can be used to read information about
+  the device on which it is being executed making a call to the following functions.
     -  MSS_SYS_get_serial_number()
     -  MSS_SYS_get_user_code()
-    -  MSS_SYS_get_design_info()
     -  MSS_SYS_get_device_certificate()
     -  MSS_SYS_read_digest()
     -  MSS_SYS_query_security()
@@ -81,7 +92,7 @@
   -----------------------------------------------------------------------------
   Design Services
   -----------------------------------------------------------------------------
-  The PolarFire SoC system service driver can be used to perform bitstream
+  The PIC64GX system service driver can be used to perform bitstream
   authentication using the following functions.
     -  MSS_SYS_authenticate_bitstream()
     -  MSS_SYS_authenticate_iap_image()
@@ -89,7 +100,7 @@
   -----------------------------------------------------------------------------
   Data Security Services
   -----------------------------------------------------------------------------
-  The PolarFire SoC System Service driver can be used to execute data security
+  The PIC64GX System Service driver can be used to execute data security
   services using the following functions:
     -  MSS_SYS_digital_signature_service ()
     -  MSS_SYS_secure_nvm_write()
@@ -98,17 +109,9 @@
     -  MSS_SYS_nonce_service ()
 
   -----------------------------------------------------------------------------
-  Executing Fabric Services
-  -----------------------------------------------------------------------------
-  The PolarFire SoC System Service driver can be used to execute fabric services
-  using the following functions:
-    -  MSS_SYS_digest_check()
-    -  MSS_SYS_execute_iap()
-
-  -----------------------------------------------------------------------------
   MSS Services
   -----------------------------------------------------------------------------
-  The PolarFire SoC System Service driver can be used to execute MSS services
+  The PIC64GX System Service driver can be used to execute MSS services
   using following functions:
     -  MSS_SYS_spi_copy()
     -  MSS_SYS_debug_read_probe()
@@ -129,24 +132,24 @@
   -----------------------------------------------------------------------------
   Modes of operation
   -----------------------------------------------------------------------------
-  The PolarFire SoC MSS system service driver can be configured to execute
+  The PIC64GX MSS system service driver can be configured to execute
   service in interrupt mode or polling mode. Users need to select the mode of
   operation by configuring the driver with appropriate service mode macros as a
   parameter to MSS_SYS_select_service_mode() function.
   In interrupt mode, the function will be non-blocking and the calling service
   function exits after requesting the system service with a success return value.
-  The actual response from the system controller will only be available after 
+  The actual response from the security controller will only be available after 
   the interrupt occurs. Use the MSS_SYS_read_response() function to read the 
   service response and the status response code.
   In Polling mode, the function call will be blocking until the service completes
   and the calling service function exits only after the completion of the service. 
   The return value in this case will indicate the service response code received 
-  from the system controller.
+  from the security controller.
   -----------------------------------------------------------------------------
   Status response
   -----------------------------------------------------------------------------
   All the service execution functions return the 16-bit status returned by
-  system controller on executing the given service. A zero value indicates the
+  security controller on executing the given service. A zero value indicates the
   successful execution of that service. A non-zero value indicates an error code
   representing the type of error that was encountered while executing the service.
   Irrespective of the mode, if the controller is busy executing the previous
@@ -160,7 +163,7 @@
   The function descriptions in this file will mainly focus on details required
   by the user to use the APIs provided by this driver to execute the services.
   To know the complete details of the system services, please refer to the
-  PolarFire® FPGA and PolarFire SoC FPGA System Services document. Link below:
+  PIC64GX® FPGA and PIC64GX FPGA System Services document. Link below:
   https://onlinedocs.microchip.com/pr/GUID-1409CF11-8EF9-4C24-A94E-70979A688632-en-US-3/index.html
 */
 
@@ -187,7 +190,7 @@ extern "C" {
     System service executed successfully.
 
   ## MSS_SYS_BUSY
-    system controller is busy executing system service which was initiated using
+    security controller is busy executing system service which was initiated using
     its AMBA interface.
 
   ## MSS_SYS_PARAM_ERR
@@ -333,9 +336,6 @@ extern "C" {
   ### BSTREAM_AUTH_ABORT_ERR
     Abort.
     Non-bitstream instruction executed during bitstream loading.
-
-  ### BSTREAM_AUTH_NVMVERIFY_ERR
-    Fabric/UFS verification failed (min or weak limit)
 
   ### BSTREAM_AUTH_PROTECTED_ERR
     Device security prevented modification of non-volatile memory
@@ -600,11 +600,11 @@ extern "C" {
 
 
   The following constants can be used to indicate the length of the data that
-  is written into the mailbox by the system controller in response to the
+  is written into the mailbox by the security controller in response to the
   service being requested.
 
   ## MSS_SYS_NO_RESPONSE_LEN
-    This constant is used to indicate that system controller does not return any
+    This constant is used to indicate that security controller does not return any
     mailbox data for the service which is being requested
 
   ## MSS_SYS_SERIAL_NUMBER_RESP_LEN
@@ -694,7 +694,6 @@ extern "C" {
   Design services request command opcodes
 */
 #define MSS_SYS_BITSTREAM_AUTHENTICATE_CMD                      0x23u
-#define MSS_SYS_IAP_BITSTREAM_AUTHENTICATE_CMD                  0x22u
 
 /*-------------------------------------------------------------------------*//**
   Data security services request command opcodes
@@ -709,19 +708,8 @@ extern "C" {
 #define MSS_SYS_NONCE_SERVICE_REQUEST_CMD                       0x21u
 
 /*-------------------------------------------------------------------------*//**
-  Fabric services request command opcodes
-*/
-#define MSS_SYS_DIGEST_CHECK_CMD                                0x47u
-#define MSS_SYS_IAP_PROGRAM_BY_SPIIDX_CMD                       0x42u
-#define MSS_SYS_IAP_VERIFY_BY_SPIIDX_CMD                        0x44u
-#define MSS_SYS_IAP_PROGRAM_BY_SPIADDR_CMD                      0x43u
-#define MSS_SYS_IAP_VERIFY_BY_SPIADDR_CMD                       0x45u
-#define MSS_SYS_IAP_AUTOUPDATE_CMD                              0x46u
-
-/*-------------------------------------------------------------------------*//**
   MSS services request command opcodes
 */
-#define MSS_SYS_SPI_COPY_CMD                                    0X50U
 #define MSS_SYS_PROBE_READ_DEBUG_CMD                            0X70U
 #define MSS_SYS_PROBE_WRITE_DEBUG_CMD                           0X71U
 #define MSS_SYS_LIVE_PROBE_A_DEBUG_CMD                          0X72U
@@ -762,7 +750,6 @@ extern "C" {
 
 #define MSS_SYS_SECURE_NVM_READ_DATA_LEN                        16u
 #define MSS_SYS_BITSTREAM_AUTHENTICATE_DATA_LEN                 4u
-#define MSS_SYS_DIGEST_CHECK_DATA_LEN                           4u
 #define MSS_SYS_IAP_SERVICE_DATA_LEN                            4u
 #define MSS_SYS_SPI_COPY_MAILBOX_DATA_LEN                       17u
 #define MSS_SYS_PROBE_READ_SERVICE_DATA_LEN                     2u
@@ -792,12 +779,6 @@ extern "C" {
 #define MSS_SYS_KM_FACTORY_KEY                                  7u
 
 /*Digest Check Input options
-  DIGEST_CHECK_FABRIC
-    Carry out digest check on Fabric
-
-  DIGEST_CHECK_CC
-    Carry out digest check on UFS Fabric Configuration (CC) segment
-
   DIGEST_CHECK_SNVM
     Carry out digest check on ROM digest in SNVM segment
 
@@ -831,7 +812,6 @@ extern "C" {
   DIGEST_CHECK_SYS
     Carry out digest check on Factory and Factory Key Segments.
 */
-#define MSS_SYS_DIGEST_CHECK_FABRIC                           (0x01<<0x00u)
 #define MSS_SYS_DIGEST_CHECK_CC                               (0x01<<0x01u)
 #define MSS_SYS_DIGEST_CHECK_SNVM                             (0x01<<0x02u)
 #define MSS_SYS_DIGEST_CHECK_UL                               (0x01<<0x03u)
@@ -900,7 +880,7 @@ typedef void (*mss_sys_service_handler_t)(void);
   @param void
          This function does not have any parameters.
   @return
-         This function returns the status code returned by the system controller
+         This function returns the status code returned by the security controller
          for requested service.
 
   @example
@@ -957,7 +937,7 @@ MSS_SYS_select_service_mode
 
   @param p_serial_number
                     The p_serial_number parameter is a pointer to a buffer
-                    in which the 128-bit data returned by system controller will
+                    in which the 128-bit data returned by security controller will
                     be stored.
 
   @param mb_offset
@@ -969,7 +949,7 @@ MSS_SYS_select_service_mode
                     mailbox starts from 11th word (offset 10).
   @return
                     This function returns the status code returned by the
-                    system controller for this service. A '0' status code means
+                    security controller for this service. A '0' status code means
                     that the service was executed successfully.
 */
 uint16_t
@@ -988,7 +968,7 @@ MSS_SYS_get_serial_number
 
   @param p_user_code
                     The p_user_code parameter is a pointer to a buffer
-                    in which the 32-bit data returned by system controller will
+                    in which the 32-bit data returned by security controller will
                     be stored.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -999,46 +979,13 @@ MSS_SYS_get_serial_number
                     mailbox starts from 11th word (offset 10).
   @return
                     This function returns the status code returned by the
-                    system controller for this service. A '0' status code means
+                    security controller for this service. A '0' status code means
                     that the service was executed successfully.
 */
 uint16_t
 MSS_SYS_get_user_code
 (
     uint8_t * p_user_code,
-    uint16_t mb_offset
-);
-
-/*-------------------------------------------------------------------------*//**
-  The function MSS_SYS_get_design_info() is used to execute "Get Design Info"
-  system service.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  @param p_design_info
-                     The p_design_info parameter is a pointer to a buffer
-                     in which the data returned by system controller will be
-                     copied. Total size of debug information is 36 bytes.
-                     The data from the system controller includes the 256-bit
-                     user-defined design ID, 16-bit design version and 16-bit
-                     design back level.
-  @param mb_offset
-                    The mb_offset parameter specifies the offset from the start
-                    of mailbox where the data related to this service is
-                    available. All accesses to the mailbox are of word length
-                    (4 bytes). A value 10 (decimal) of this parameter would
-                    mean that the data access area for this service, in the
-                    mailbox starts from 11th word (offset 10).
-  @return
-                    This function returns a value to indicate whether the
-                    service was executed successfully or not. A zero value
-                    indicates that the service was executed successfully.
-*/
-uint16_t
-MSS_SYS_get_design_info
-(
-    uint8_t * p_design_info,
     uint16_t mb_offset
 );
 
@@ -1051,7 +998,7 @@ MSS_SYS_get_design_info
 
   @param p_device_certificate
                     The p_device_certificate parameter is a pointer to a buffer
-                    in which the data returned by the system controller will be
+                    in which the data returned by the security controller will be
                     stored.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1085,7 +1032,7 @@ MSS_SYS_get_device_certificate
 
   @param p_digest
                     The p_digest parameter is a pointer to a buffer
-                    in which the data returned by system controller will be
+                    in which the data returned by security controller will be
                     copied.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1115,7 +1062,7 @@ MSS_SYS_read_digest
 
   @param p_security_locks
                     The p_security_locks parameter is a pointer to a buffer
-                    in which the data returned by system controller will be
+                    in which the data returned by security controller will be
                     copied.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1145,7 +1092,7 @@ MSS_SYS_query_security
 
   @param p_debug_info
                     The p_debug_info parameter is a pointer to a buffer
-                    in which the data returned by system controller will be
+                    in which the data returned by security controller will be
                     copied.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1197,79 +1144,6 @@ MSS_SYS_read_envm_parameter
 );
 
 /*-------------------------------------------------------------------------*//**
-  The MSS_SYS_authenticate_bitstream() function is used to authenticate
-  the Bitstream which is located in SPI through a system service routine. Prior
-  to using the IAP service, it may be required to first validate the new
-  bitstream before committing the device to reprogramming, thus avoiding the
-  need to invoke recovery procedures if the bitstream is invalid.
-
-  This service is applicable to bitstreams stored in SPI Flash memory only.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  @param spi_flash_address
-                    The spi_flash_address parameter specifies the address within
-                    SPI Flash memory where the bit-stream is stored.
-  @param mb_offset
-                    The mb_offset parameter specifies the offset from the start
-                    of mailbox where the data related to this service is
-                    available. All accesses to the mailbox are of word length
-                    (4 bytes). A value 10 (decimal) of this parameter would
-                    mean that the data access area for this service, in the
-                    mailbox starts from 11th word (offset 10).
-  @return
-                    This function returns a value to indicate whether the
-                    service was executed successfully or not. A zero value
-                    indicates that the service was executed successfully.
-                    Please refer to theory of operation -> status response and
-                    reference documents section for more information about the
-                    service.
-*/
-uint16_t
-MSS_SYS_authenticate_bitstream
-(
-    uint32_t spi_flash_address,
-    uint16_t mb_offset
-);
-
-/*-------------------------------------------------------------------------*//**
-  The MSS_SYS_authenticate_iap_image() function is used to authenticate
-  the IAP image which is located in SPI through a system service routine. The
-  service checks the image descriptor and the referenced bitstream and optional
-  initialization data.  If the image is authenticated successfully, then the
-  image is guaranteed to be valid when used by an IAP function.
-
-  This service is applicable to bitstreams stored in SPI Flash memory only.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  @param spi_idx
-                    The spi_idx parameter specifies the index in the SPI
-                    directory to be used where the IAP bit-stream is stored.
-
-                    Note: To support recovery SPI_IDX=1 should be an empty slot
-                    and the recovery image should be located in SPI_IDX=0. Since
-                    SPI_IDX=1 should be an empty slot it shouldn’t be passed into
-                    the system service.
-  @return
-                   The MSS_SYS_authenticate_iap_image function returns a value
-                   to indicate whether the service was executed successfully or
-                   not. A zero value indicates that the service was executed
-                   successfully.
-
-                   Please refer to theory of operation -> status response and
-                   reference documents section for more information about the
-                   service.
-*/
-uint16_t
-MSS_SYS_authenticate_iap_image
-(
-    uint32_t spi_idx
-);
-
-/*-------------------------------------------------------------------------*//**
   The MSS_SYS_puf_emulation_service() function accept a challenge comprising a
   8-bit optype and 128-bit challenge and return a 256-bit response unique to
   the given challenge and the device.
@@ -1287,7 +1161,7 @@ MSS_SYS_authenticate_iap_image
                     response.
   @param p_response
                     The p_response parameter is a pointer to a buffer in
-                    which the data returned i.e. response by system controller
+                    which the data returned i.e. response by security controller
                     will be copied.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1476,14 +1350,14 @@ MSS_SYS_secure_nvm_read
 
 /*-------------------------------------------------------------------------*//**
   The function MSS_SYS_nonce_service() is used to issue "Nonce Service" system
-  service to the system controller.
+  service to the security controller.
 
   Please refer to theory of operation -> reference documents section for more 
   information about the service.
 
   @param p_nonce
                     The p_nonce parameter is a pointer to a buffer
-                    in which the data returned by system controller will be
+                    in which the data returned by security controller will be
                     copied.
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start
@@ -1493,224 +1367,13 @@ MSS_SYS_secure_nvm_read
                     mean that the data access area for this service, in the
                     mailbox starts from 11th word (offset 10).
   @return           This function returns the status code returned by the
-                    system controller for this service. A '0' status code means
+                    security controller for this service. A '0' status code means
                     that the service was executed successfully.
 */
 uint16_t
 MSS_SYS_nonce_service
 (
     uint8_t * p_nonce,
-    uint16_t mb_offset
-);
-
-/*-------------------------------------------------------------------------*//**
-  The MSS_SYS_digest_check() function is used to Recalculates and compares
-  digests of selected non-volatile memories.
-
-  This service is applicable to bitstream stored in SPI Flash memory only.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  Information : parameter options
-  | Options[i]  |    Description                              |
-  |-------------|---------------------------------------------|
-  |   0x01      |   Fabric digest                             |
-  |   0x02      |   Fabric Configuration (CC) segment         |
-  |   0x04      |   ROM digest in SNVM segment                |
-  |   0x08      |   UL segment                                |
-  |   0x10      |   UKDIGEST0 in User Key segment             |
-  |   0x20      |   UKDIGEST1 in User Key segment             |
-  |   0x40      |   UKDIGEST2 in User Key segment (UPK1)      |
-  |   0x80      |   UKDIGEST3 in User Key segment (UK1)       |
-  |   0x100     |   UKDIGEST4 in User Key segment (DPK)       |
-  |   0x200     |   UKDIGEST5 in User Key segment (UPK2)      |
-  |   0x400     |   UKDIGEST6 in User Key segment (UK2)       |
-  |   0x800     |   UFS Permanent lock (UPERM) segment        |
-  |   0x1000    |   Factory and Factory Key Segments.         |
-  |   0x2000    |   UKDIGEST7 in User Key segment (HWM)       |
-  |   0x4000    |   ENVMDIGEST                                |
-  |   0x8000    |   UKDIGEST8 for MSS Boot Info               |
-  |   0x10000   |   SNVM_RW_ACCESS_MAP Digest                 |
-  |   0x20000   |   SBIC revocation digest                    |
-
-  Information : parameter digesterr 
-  | DIGESTERR[i]|    Description                              |
-  |-------------|---------------------------------------------|
-  |   0x01      |   Fabric digest                             |
-  |   0x02      |   Fabric Configuration (CC) segment         |
-  |   0x04      |   ROM digest in SNVM segment                |
-  |   0x08      |   UL segment                                |
-  |   0x10      |   UKDIGEST0 in User Key segment             |
-  |   0x20      |   UKDIGEST1 in User Key segment             |
-  |   0x40      |   UKDIGEST2 in User Key segment (UPK1)      |
-  |   0x80      |   UKDIGEST3 in User Key segment (UK1)       |
-  |   0x100     |   UKDIGEST4 in User Key segment (DPK)       |
-  |   0x200     |   UKDIGEST5 in User Key segment (UPK2)      |
-  |   0x400     |   UKDIGEST6 in User Key segment (UK2)       |
-  |   0x800     |   UFS Permanent lock (UPERM) segment        |
-  |   0x1000    |   Factory and Factory Key Segments.         |
-  |   0x2000    |   UKDIGEST7 in User Key segment (HWM)       |
-  |   0x4000    |   ENVMDIGEST                                |
-  |   0x8000    |   UKDIGEST8 for MSS Boot Info               |
-  |   0x10000   |   SNVM_RW_ACCESS_MAP Digest                 |
-  |   0x20000   |   SBIC revocation digest                    |
-
-  @param options
-               The options parameter specifies the digest check options which
-               indicate the area on which the digest check should be performed.
-               Below is the list of options. You can OR these options to indicate
-               to perform digest check on multiple segments. Please refer 
-               function description for more information of options parameter.
-
-  @param mb_offset
-                    The mb_offset parameter specifies the offset from the start
-                    of mailbox where the data related to this service is
-                    available. All accesses to the mailbox are of word length
-                    (4 bytes). A value 10 (decimal) of this parameter would
-                    mean that the data access area for this service, in the
-                    mailbox starts from 11th word (offset 10).
-  @param digesterr
-                    The digesterr parameter specifies the set bit in case of
-                    DIGESTERR. Please refer function description for more 
-                    information of digesterr parameter.
-
-  @return
-                    This function returns a value to indicate whether the
-                    service was executed successfully or not. A zero value
-                    indicates that the service was executed successfully.
-*/
-uint16_t
-MSS_SYS_digest_check
-(
-    uint32_t options,
-    uint8_t* digesterr,
-    uint16_t mb_offset
-);
-
-/*-------------------------------------------------------------------------*//**
-  The MSS_SYS_execute_iap() function is used to IAP service. The IAP service
-  allows the user to reprogram the device without the need for an external
-  master. The user design writes the bitstream to be programmed into a SPI Flash
-  connected to the SPI port.  When the service is invoked, the System Controller
-  automatically reads the bitstream from the SPI flash and programs the device.
-  The service allows the image to be executed in either VERIFY or PROGRAM modes.
-  Another option for IAP is to perform the auto-update sequence. In this case
-  the newest image of the first two images in the SPI directory is chosen to be
-  programmed.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  Information : parameter iap_cmd 
-  |     iap_cmd                 |  Description                     |
-  |-----------------------------|----------------------------------|
-  | IAP_PROGRAM_BY_SPIIDX_CMD   |  IAP program.                    |
-  | IAP_VERIFY_BY_SPIIDX_CMD    |  Fabric Configuration (CC) segment|
-  | IAP_PROGRAM_BY_SPIADDR_CMD  |  ROM digest in SNVM segment      |
-  | IAP_VERIFY_BY_SPIADDR_CMD   |  UL segment                      |
-  | IAP_AUTOUPDATE_CMD          |  UKDIGEST0 in User Key segment   |
-
-  Information : parameter spiaddr 
-  |         iap_cmd              |        spiaddr                 |
-  |------------------------------|--------------------------------|
-  | IAP_PROGRAM_BY_SPIIDX_CMD    |Index in the SPI directory.     |
-  | IAP_VERIFY_BY_SPIIDX_CMD     |Index in the SPI directory.     |
-  | IAP_PROGRAM_BY_SPIADDR_CMD   |SPI address in the SPI Flash memory
-  | IAP_VERIFY_BY_SPIADDR_CMD    |SPI address in the SPI Flash memory
-  | IAP_AUTOUPDATE_CMD           |spiaddr is ignored as No index  |
-  |                               address required for this com
-  Note: For the IAP services with command IAP_PROGRAM_BY_SPIIDX_CMD
-       and IAP_VERIFY_BY_SPIIDX_CMD To support recovery SPI_IDX = 1
-       should be an empty slot and the recovery image should be
-       located in SPI_IDX = 0. Since SPI_IDX = 1 should be an empty
-       slot it shouldn’t be passed into the system service.
-
-  @param iap_cmd
-               The iap_cmd parameter specifies the specific IAP command which
-               depends upon VERIFY or PROGRAM modes and the SPI address method.
-               Please refer function description for more information of 
-               iap_cmd parameter.
-  @param spiaddr
-               The spiaddr parameter specifies the either the either the index
-               in the SPI directory or the SPI address in the SPI Flash memory.
-               Below is the list of the possible meaning of spiaddr parameter
-               in accordance with the iap_cmd parameter. Please refer function 
-               description for more information of spiaddr parameter.
-  @param mb_offset
-                    The mb_offset parameter specifies the offset from the start
-                    of mailbox where the data related to this service is
-                    available. All accesses to the mailbox are of word length
-                    (4 bytes). A value 10 (decimal) of this parameter would
-                    mean that the data access area for this service, in the
-                    mailbox starts from 11th word (offset 10).
-  @return
-                    This function returns a value to indicate whether the
-                    service was executed successfully or not. A zero value
-                    indicates that the service was executed successfully.
-
-                    Please refer to theory of operation -> status response and
-                    reference documents section for more information about the
-                    service.
-*/
-uint16_t
-MSS_SYS_execute_iap
-(
-    uint8_t iap_cmd,
-    uint32_t spiaddr,
-    uint16_t mb_offset
-);
-
-/*-------------------------------------------------------------------------*//**
-  The MSS_SYS_spi_copy() function allows data to be copied from the system
-  controller SPI flash to MSS memory. The SPI SCK frequency is specified by a
-  user-defined option with valid values shown in parameter description.
-
-  Please refer to theory of operation -> reference documents section for more 
-  information about the service.
-
-  Information : parameter options
-  |options |Clock     |
-  |--------|----------|
-  | 1      | 40MHz    |
-  | 2      | 20MHz    |
-  | 3      | 13.33MHz |
-  7:2 RESERVED        Reserved for future use
-
-  @param mss_dest_addr
-                    The 64-bit mss_dest_addr parameter specifies the destination
-                    address in MSS where system controller copies data from SPI
-                    flash.
-  @param mss_spi_flash
-                    The 32-bit mss_spi_flash parameter specifies the source
-                    address of data to be copied in MSS.
-  @param n_bytes
-                    The n_bytes parameter specifies the number of bytes to
-                    transfer.
-  @param options
-                    The 8 bit options parameter specifies the clock frequency
-                    used for the SPI transfers.
-                    Please refer function description for more information 
-                    of options parameter.
-  @param mb_offset
-                    The mb_offset parameter specifies the offset from the start
-                    of mailbox where the data related to this service is
-                    available. All accesses to the mailbox are of word length
-                    (4 bytes). A value 10 (decimal) of this parameter would
-                    mean that the data access area for this service, in the
-                    mailbox starts from 11th word (offset 10).
-  @return
-                    This function returns a value to indicate whether the
-                    service was executed successfully or not. A zero value
-                    indicates that the service was executed successfully.
-*/
-uint16_t
-MSS_SYS_spi_copy
-(
-    uint64_t mss_dest_addr,
-    uint32_t mss_spi_flash,
-    uint32_t n_bytes,
-    uint8_t options,
     uint16_t mb_offset
 );
 
@@ -1763,7 +1426,7 @@ MSS_SYS_debug_read_probe
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_write_probe() function will issue the probe write debug
-  service to the system controller. It service will writes up to 18 bits of data
+  service to the security controller. It service will writes up to 18 bits of data
   to selected probe address.
 
   Please refer to theory of operation -> reference documents section for more 
@@ -1812,7 +1475,7 @@ MSS_SYS_debug_write_probe
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_live_probe() function will issue the 'Live Probe Debug Service'
-  to the system controller. This service will configures channel 'a' or
+  to the security controller. This service will configures channel 'a' or
   'b' of the live probe system.
 
   Note:
@@ -1949,7 +1612,7 @@ MSS_SYS_debug_select_mem
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_read_mem() function issues the MEM Read Debug Service to the
-  system controller. This service provides an interface to read data from the
+  security controller. This service provides an interface to read data from the
   memory peripheral that is specified.
 
   Please refer to theory of operation -> reference documents section for more 
@@ -1989,7 +1652,7 @@ MSS_SYS_debug_read_mem
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_write_mem() function issues the MEM Write Debug Service to
-  the system controller. This service provides an interface to write data from
+  the security controller. This service provides an interface to write data from
   the memory peripheral that is specified.
 
   Please refer to theory of operation -> reference documents section for more 
@@ -2029,14 +1692,14 @@ MSS_SYS_debug_write_mem
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_read_apb() function issues the APB Read Debug Service to the
-  system controller. This service will read a specified number of bytes from
+  security controller. This service will read a specified number of bytes from
   the fabric APB bus to the specified MSS RAM area.
 
   Please refer to theory of operation -> reference documents section for more 
   information about the service.
 
   Note: This service will return only the status of service execution. Actual
-  data read by the system controller will be available at the specified MSS RAM
+  data read by the security controller will be available at the specified MSS RAM
   area. It is expected that the application code should perform read operation
   to the specified MSS RAM area after successful execution of the service.
 
@@ -2128,7 +1791,7 @@ MSS_SYS_debug_write_apb
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_fabric_snapshot() will issue the Debug Snapshot Service to
-  the system controller. This service generates a snapshot of the volatile
+  the security controller. This service generates a snapshot of the volatile
   fabric content. Data is read from each LSRAM, µRAM and probe module and copied
   to the fabric APB debug port.
 
@@ -2169,7 +1832,7 @@ MSS_SYS_debug_fabric_snapshot
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_otp_generate() function will issue the Generate OTP Service to the
-  system controller. This service used to set up the device to receive a
+  security controller. This service used to set up the device to receive a
   one-time passcode.
 
   Please refer to theory of operation -> reference documents section for more 
@@ -2194,8 +1857,8 @@ MSS_SYS_debug_fabric_snapshot
   @param n_user
                    The n_user parameter specifies the user nonce, is supplied
                    by the user.
-  @param n_fpga
-                    The n_fpga parameter specifies the 128-bit nonce, NFPGA, is
+  @param nonce
+                    The nonce parameter specifies the 128-bit nonce that is
                     generated and stored in volatile memory for later use in the
                     rest of the protocol.
   @param mb_offset
@@ -2226,7 +1889,7 @@ MSS_SYS_otp_generate
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_otp_match() function will issue the Match OTP Service to the
-  system controller. This service is the second part of the one-time
+  security controller. This service is the second part of the one-time
   passcode protocol. Before using this service the GENERATE OTP service must
   first be used to obtain a nonce, NFPGA from the device.
 
@@ -2270,7 +1933,7 @@ MSS_SYS_otp_match
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_unlock_debug_passcode() will issue the Unlock Debug Passcode
-  Service to the system controller. This service will Attempt to match
+  Service to the security controller. This service will Attempt to match
   the user debug pass code using the key loaded into the mailbox.  If the match
   is successful the software debug lock SWL_DEBUG is temporarily inactive.
 
@@ -2387,7 +2050,7 @@ MSS_SYS_one_way_passcode
 
 /*-------------------------------------------------------------------------*//**
   The MSS_SYS_debug_terminate() function will issue the Terminate Debug Service
-  to the system controller. This service will terminate the debug session.
+  to the security controller. This service will terminate the debug session.
 
   @param mb_offset
                     The mb_offset parameter specifies the offset from the start

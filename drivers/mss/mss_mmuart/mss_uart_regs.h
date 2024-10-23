@@ -1,12 +1,9 @@
-/*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ /*******************************************************************************
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_uart_regs.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Register bit offsets and masks definitions for PolarFire SoC
- * Microprocessor Subsystem (MSS) MMUART
+ * Register bit offsets and masks definitions for PIC64GX MSS MMUART
  *
  */
 
@@ -129,7 +126,7 @@ extern "C" {
 #define ELINBI_MASK                 (0x01u << 3u)      /* Enable LIN break interrupt */
 #define ELINSI_MASK                 (0x01u << 4u)      /* Enable LIN sync detection interrupt */
 
-#ifdef __cplusplus                       
+#ifdef __cplusplus
 }
 #endif
 

@@ -1,15 +1,11 @@
-/*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ /*******************************************************************************
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
- *
- * @file mss_sys_services_regs.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Register bit offsets and masks definitions for PolarFire SoC
- * Microprocessor Subsystem (MSS) System Services
- *
+ * 
+ * Register bit offsets and masks definitions for PIC64GX MSS system
+ * services
  */
-
 #ifndef MSS_SYS_SERVICES_REGS_H_
 #define MSS_SYS_SERVICES_REGS_H_
 

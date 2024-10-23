@@ -1,15 +1,13 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_ethernet_mac_regs.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Register bit offsets and masks definitions for PolarFire SoC
- * Microprocessor Subsystem (MSS) MAC.
+ * Register bit offsets and masks definitions for PIC64GX MSS MAC.
  *
+ * SVN $Revision$
+ * SVN $Date$
  */
-
 #ifndef MSS_ETHERNET_MAC_REGS_H_
 #define MSS_ETHERNET_MAC_REGS_H_
 
@@ -1051,7 +1049,7 @@ extern "C" {
 #define GEM_INT_RCV_V_ERROR                         BIT_01
 #define GEM_INT_RCV_R_ERROR                         BIT_00
 
-#ifdef __cplusplus                       
+#ifdef __cplusplus
 }
 #endif
 

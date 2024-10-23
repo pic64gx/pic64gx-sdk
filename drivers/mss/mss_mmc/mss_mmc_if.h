@@ -1,28 +1,26 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_mmc_if.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) eMMC SD Interface Level
- * Header File.
+ * PIC64GX MSS eMMC SD Interface Level Header File.
  *
  * This eMMC SD Interface header file provides access to functions which are
  * used to configure and program the eMMC/SD device to allow data transfers
  * to be performed with the eMMC/SD Host.
  *
+ * SVN $Revision: 12579 $
+ * SVN $Date: 2019-12-04 16:41:30 +0530 (Wed, 04 Dec 2019) $
  */
 
-#ifndef MSS_MMC_IF_H
-#define MSS_MMC_IF_H
-
-#include <stddef.h>
-#include <stdint.h>
+#ifndef __MSS_MMC_IF_H
+#define __MSS_MMC_IF_H
 
 #ifdef __cplusplus
 extern "C"
 #endif
+
+#include "hal/cpu_types.h"
 
 /***************************************************************************//**
  * Macro Definitions
@@ -53,17 +51,17 @@ typedef enum
 
 
 /***************************************************************************//**
-  
-  The cif_send_cmd() function handles the interface level command and response 
+
+  The cif_send_cmd() function handles the interface level command and response
   data for communicating with the eMMC/SD device. This function issues
   configuration and control commands to the device, waits on the status register
-  to update indicating that there was a response received (were expected) and 
+  to update indicating that there was a response received (were expected) and
   parses the response to determine the successfulness of the transfer.
-  
+
   @param cmd_arg
   The cmd_arg parameter specifies the eMMC/SD argument to be passed to the
   eMMC/SD device.
-  
+
   @param cmd_type
   The cmd_type parameter specifies the eMMC/SD Command type to be passed to the
   eMMC/SD  device.
@@ -73,8 +71,8 @@ typedef enum
   eMMC/SD device.
 
   @return
-  This function returns a value of type cif_response_t representing the 
-  successfulness of the transfer. If this return value indicates that the 
+  This function returns a value of type cif_response_t representing the
+  successfulness of the transfer. If this return value indicates that the
   eMMC/SD device is busy, subsequent actions must be taken to ensure that a
   command is not issued until the device returns to idle.
 
@@ -83,9 +81,9 @@ typedef enum
     #define MMC_DW_CSD        0x03B70300u
     #define MMC_CMD_SWITCH    6u
     cif_response_t response_status;
-    
+
     response_status = cif_send_cmd(MMC_DW_CSD, MMC_CMD_SWITCH, MMC_RESPONSE_R1B);
-    
+
     while(DEVICE_BUSY == response_status)
     {
         response_status = cif_send_cmd(RCA_VALUE,
@@ -161,4 +159,4 @@ cif_response_t cif_send_cq_direct_command
 }
 #endif
 
-#endif  /* MSS_MMC_IF_H */
+#endif  /* __MSS_MMC_IF_H */

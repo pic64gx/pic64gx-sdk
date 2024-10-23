@@ -1,20 +1,18 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_mmc_if.c
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) eMMC SD Interface Level
- * Driver.
+ * PIC64GX MSS eMMC SD Interface Level Driver.
  *
  * This eMMC/SD Interface driver provides functions for transferring
  * configuration and programming commands to the eMMC/SD device. Functions
  * contained within the eMMC/SD interface driver are accessed through the
  * mss_mmc_if.h header file.
  *
+ * SVN $Revision: 12579 $
+ * SVN $Date: 2019-12-04 16:41:30 +0530 (Wed, 04 Dec 2019) $
  */
-
 #include "mss_mmc_if.h"
 #include "mss_mmc_regs.h"
 #include "mss_mmc_types.h"
@@ -42,12 +40,7 @@ static cif_response_t cq_execute_task(uint8_t task_id);
  * cif_send_cmd()
  * See ".h" for details of how to use this function.
  */
-cif_response_t cif_send_cmd
-(
-    uint32_t cmd_arg,
-    uint32_t cmd_type,
-    uint8_t resp_type
-)
+cif_response_t cif_send_cmd(uint32_t cmd_arg, uint32_t cmd_type, uint8_t resp_type)
 {
     uint32_t trans_status_isr;
     cif_response_t ret_status = TRANSFER_IF_FAIL;
@@ -60,7 +53,7 @@ cif_response_t cif_send_cmd
     {
         if (time >= cmd_timeout)
         {
-            if ((2u * cmd_timeout) <= SDHCI_CMD_MAX_TIMEOUT)
+            if (2u * cmd_timeout <= SDHCI_CMD_MAX_TIMEOUT)
             {
                 cmd_timeout += cmd_timeout;
             }
@@ -70,7 +63,7 @@ cif_response_t cif_send_cmd
             }
         }
         time++;
-        while (value-- != 0u);
+        while (value--);
         value = DELAY_COUNT;
     }
     /* clear all status interrupts except:
@@ -82,7 +75,7 @@ cif_response_t cif_send_cmd
 
     /* Transfer the Command to the MMC device */
     send_mmc_cmd(cmd_arg, cmd_type, resp_type, CHECK_IF_CMD_SENT_POLL);
-    
+
     /* No responses for CMD 0,4,15 */
     if ((MMC_CMD_0_GO_IDLE_STATE != cmd_type) && (MMC_CMD_4_SET_DSR != cmd_type)
                                 && (MMC_CMD_15_GOTO_INACTIVE_STATE != cmd_type))
@@ -93,8 +86,7 @@ cif_response_t cif_send_cmd
             (MMC_CLEAR == (SRS12_ERROR_INTERRUPT & trans_status_isr)))
         {
             /* If the response is an R1/B response */
-            if ((MSS_MMC_RESPONSE_R1 == (MSS_MMC_response_type)resp_type) 
-            || (MSS_MMC_RESPONSE_R1B == (MSS_MMC_response_type)resp_type))
+            if ((MSS_MMC_RESPONSE_R1 == resp_type) || (MSS_MMC_RESPONSE_R1B == resp_type))
             {
                 ret_status = response_1_parser();
             }
@@ -125,38 +117,35 @@ cif_response_t cif_send_cmd
     return(ret_status);
 }
 
-/***************************************************************************//** 
+/***************************************************************************//**
  * The send_mmc_cmd() function transfers the eMMC/SD command and argument to the
  * eMMC/SD device and waits until the core indicates that the command has been
  * transferred successfully.
  */
-void send_mmc_cmd
-(
-    uint32_t cmd_arg,
-    uint32_t cmd_type,
-    uint8_t resp_type,
-    cmd_response_check_options cmd_option
-)
+void send_mmc_cmd(uint32_t cmd_arg, uint32_t cmd_type, uint8_t resp_type, cmd_response_check_options cmd_option)
 {
     uint32_t cmd_index, command_information;
     uint32_t trans_status_isr;
-    uint32_t cmd_type_temp = MMC_CLEAR;
 
     command_information = process_request_checkresptype(resp_type);
-	cmd_index = cmd_type & CMD_INDEX_MASK;
-	cmd_type_temp = (cmd_type & CMD_TYPE_MASK) << SHIFT_16BIT;
+    cmd_index = cmd_type & CMD_INDEX_MASK;
+    cmd_type = (cmd_type & CMD_TYPE_MASK) << SHIFT_16BIT;
 
     MMC->SRS02 = cmd_arg;
-    MMC->SRS03 = (uint32_t)((cmd_index << CMD_SHIFT) | cmd_type_temp | command_information);
+    MMC->SRS03 = (uint32_t)((cmd_index << CMD_SHIFT) | cmd_type | command_information);
+
+    mMMC_DECLARE_TIMEOUT(mmc_spin_timeout);
 
     switch (cmd_option)
     {
         /* only need to wait around if expecting no response */
         case CHECK_IF_CMD_SENT_POLL:
+            mMMC_ARM_TIMEOUT(mmc_spin_timeout);
             do
             {
                 trans_status_isr = MMC->SRS12;
-            }while (((SRS12_COMMAND_COMPLETE | SRS12_ERROR_INTERRUPT) & trans_status_isr) == MMC_CLEAR);
+                mMMC_CHECK_TIMEOUT(mmc_spin_timeout);
+            } while (((SRS12_COMMAND_COMPLETE | SRS12_ERROR_INTERRUPT) & trans_status_isr) == MMC_CLEAR);
             break;
         case CHECK_IF_CMD_SENT_INT:
             break;
@@ -169,8 +158,8 @@ void send_mmc_cmd
     }
 }
 
-/***************************************************************************//** 
- * The response_1_parser() returns the contents of the Card Status Register. 
+/***************************************************************************//**
+ * The response_1_parser() returns the contents of the Card Status Register.
  * This function checks that none of the error fields are set within the CSR
  * and the status of the READY_FOR_DATA flag (Bit 8).
  */
@@ -178,7 +167,7 @@ static cif_response_t response_1_parser(void)
 {
     cif_response_t ret_status = TRANSFER_IF_FAIL;
     uint32_t response;
-    
+
     response = MMC->SRS04;
     if (MMC_CLEAR == (CARD_STATUS_ALL_ERRORS_MASK & response)) /* no error */
     {
@@ -234,14 +223,8 @@ static uint32_t process_request_checkresptype(uint8_t responsetype)
 }
 
 /******************************************************************************/
-cif_response_t cif_send_cq_direct_command
-(
-    uint8_t *desc_base_addr,
-    uint32_t cmd_arg,
-    uint32_t cmd_type,
-    uint8_t resp_type,
-    uint8_t task_id
-)
+cif_response_t cif_send_cq_direct_command(uint8_t *desc_base_addr, uint32_t cmd_arg,
+    uint32_t cmd_type, uint8_t resp_type, uint8_t task_id)
 {
 
     uint32_t *dcmdTaskDesc;
@@ -250,7 +233,7 @@ cif_response_t cif_send_cq_direct_command
     uint32_t reg;
     uint32_t cmd_response;
     cif_response_t ret_status = TRANSFER_IF_FAIL;
-    
+
     /* Enable direct command */
     reg = MMC->CQRS02;
     reg |= (uint32_t)CQRS02_DIRECT_CMD_ENABLE;
@@ -324,7 +307,6 @@ cif_response_t cif_send_cq_direct_command
 /******************************************************************************/
 static cif_response_t cq_execute_task(uint8_t task_id)
 {
-
     cif_response_t ret_status = TRANSFER_IF_FAIL;
     uint32_t reg;
     uint32_t trans_status_isr;
@@ -335,12 +317,17 @@ static cif_response_t cq_execute_task(uint8_t task_id)
     reg = MMC_SET << task_id;
     MMC->CQRS10 = reg;
 
-    while (value-- != 0u);
-    
+    while (value--) {
+        ;
+    }
+
+    mMMC_DECLARE_TIMEOUT(mmc_spin_timeout);
+    mMMC_ARM_TIMEOUT(mmc_spin_timeout);
     do
     {
         trans_status_isr = MMC->SRS12;
-    }while (((SRS12_ERROR_INTERRUPT | SRS12_CMD_QUEUING_INT) & trans_status_isr) == MMC_CLEAR);
+        mMMC_CHECK_TIMEOUT(mmc_spin_timeout, TRANSFER_IF_FAIL);
+    } while (((SRS12_ERROR_INTERRUPT | SRS12_CMD_QUEUING_INT) & trans_status_isr) == MMC_CLEAR);
 
     if ((trans_status_isr & (SRS12_ERROR_INTERRUPT | SRS12_CMD_QUEUING_INT)) != MMC_CLEAR)
     {
@@ -385,6 +372,8 @@ static cif_response_t cq_execute_task(uint8_t task_id)
     {
         ret_status = TRANSFER_IF_FAIL;
     }
+
+    (void) cmd_response; // unused, so referencing to avoid compiler warning
     return ret_status;
 }
 /******************************************************************************/

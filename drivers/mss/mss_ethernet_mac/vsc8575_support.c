@@ -1,16 +1,15 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file vsc8575_support.c
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Support routines for the VTS API for the Microsemi VSC8575 PHY
- * interface to support the peripheral daughter board for the G5 SoC Emulation
- * Platform.
+ * Support routines for the VTS API for the Microsemi VSC8575 PHY interface
+ * to support the peripheral daughter board for the G5 SoC Emulation Platform.
+ *
+ * SVN $Revision$
+ * SVN $Date$
  *
  */
-
 #include <stdio.h>
 #include <stdarg.h> /* For va_list */
 #include <stdlib.h>
@@ -18,10 +17,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "mpfs_hal/mss_hal.h"
-#include "hal/hal.h"
-
-#include "drivers/mss/mss_ethernet_mac/mss_ethernet_mac_sw_cfg.h"
+#include "drivers/mss/mss_mac/mss_ethernet_mac_user_config.h"
 
 #if MSS_MAC_USE_PHY_VSC8575
 #include "vtss_api.h"   /* For BOOL and friends */
@@ -33,13 +29,14 @@
 #include "vtss_viper_phy_prototypes.h"
 #endif
 
+#include "mss_plic.h"
 
-#include "drivers/mss/mss_ethernet_mac/mss_ethernet_registers.h"
-#include "drivers/mss/mss_ethernet_mac/mss_ethernet_mac_regs.h"
-#include "drivers/mss/mss_ethernet_mac/mss_ethernet_mac.h"
-#include "drivers/mss/mss_ethernet_mac/phy.h"
+#include "drivers/mss/mss_mac/mss_ethernet_registers.h"
+#include "drivers/mss/mss_mac/mss_ethernet_mac_regs.h"
+#include "drivers/mss/mss_mac/mss_ethernet_mac.h"
+#include "drivers/mss/mss_mac/phy.h"
 
-#include "drivers/mss/mss_ethernet_mac/mss_ethernet_mac_types.h"
+#include "drivers/mss/mss_mac/mss_ethernet_mac_types.h"
 
 #ifdef _ZL303XX_FMC_BOARD
 /* Only needed if SPI interfaces required */
@@ -391,7 +388,7 @@ vtss_rc miim_write(const vtss_inst_t    inst,
     {
         MSS_MAC_write_phy_reg(g_my_mac, (uint8_t)(phy_port + g_my_mac->phy_addr), (uint8_t)phy_reg, value); /* TBD: PMCS Warning only works for single MAC/VSC8575 combination */
     }
-    
+
     return VTSS_RC_OK;
 }
 #endif /* MSS_MAC_USE_PHY_VSC8575 */
@@ -455,7 +452,7 @@ int32_t miim_read( const uint32_t          phy_port,
     {
         *value = MSS_MAC_read_phy_reg(g_my_mac, (uint8_t)(phy_port + g_my_mac->phy_addr), (uint8_t)phy_reg); /* TBD: PMCS Warning only works for single MAC/VSC8575 combination */
     }
-    
+
     T_N("miim read port_no = %d, addr = %d, value = 0x%X", port_no, addr, *value);
 
     return 0;
@@ -519,7 +516,7 @@ int32_t miim_write( const uint32_t      phy_port,
     {
         MSS_MAC_write_phy_reg(g_my_mac, (uint8_t)(phy_port + g_my_mac->phy_addr), (uint8_t)phy_reg, value); /* TBD: PMCS Warning only works for single MAC/VSC8575 combination */
     }
-    
+
     return 0;
 }
 

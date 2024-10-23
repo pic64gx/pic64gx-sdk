@@ -1,11 +1,14 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file hw_reg_access.S
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief Hardware registers access functions.
+ * PIC64GX HAL Embedded Software
+ *
+ */
+/***************************************************************************//**
+ *
+ * Hardware registers access functions.
  * The implementation of these function is platform and toolchain specific.
  * The functions declared here are implemented using assembler as part of the
  * processor/toolchain specific HAL.
@@ -43,7 +46,6 @@ HW_set_32bit_reg:
  * register.
  *
  * a0:   addr_t reg_addr
-
  * @return          32 bits value read from the peripheral register.
  */
 HW_get_32bit_reg:
@@ -104,7 +106,6 @@ HW_set_16bit_reg:
  * register.
  *
  * a0:   addr_t reg_addr
-
  * @return          16 bits value read from the peripheral register.
  */
 HW_get_16bit_reg:
@@ -166,7 +167,6 @@ HW_set_8bit_reg:
  * register.
  *
  * a0:   addr_t reg_addr
-
  * @return          8 bits value read from the peripheral register.
  */
 HW_get_8bit_reg:

@@ -1,23 +1,24 @@
 /*******************************************************************************
- * Copyright 2019 Microchip FPGA Embedded Systems Solutions.
+ * Copyright 2019-2024 Microchip Technology Inc.
  *
  * SPDX-License-Identifier: MIT
  *
- * @file mss_usb_common_cif.h
- * @author Microchip FPGA Embedded Systems Solutions
- * @brief PolarFire SoC Microprocessor Subsystem (MSS) USB Driver Stack
- *          USB Core Interface Layer (USB-CIFL)
- *            USB-CIF driver
+ * Microchip PIC64GX MSS USB Driver Stack
+ *      USB Core Interface Layer (USB-CIFL)
+ *          USB-CIF driver
  *
  * USB-CIF driver public API.
  *
+ *
+ * SVN $Revision$
+ * SVN $Date$
  */
 
 #ifndef __MSS_USB_COMMON_CIF_H_
 #define __MSS_USB_COMMON_CIF_H_
 
-#include "mss_usb_config.h"
-#include "mss_usb_core_regs.h"
+#include "coreplex_usb_config.h"
+#include "coreplex_usb_core_regs.h"
 
 #define __INLINE        inline
 
@@ -26,7 +27,7 @@ extern "C" {
 #endif
 
 /*-------------------------------------------------------------------------*//**
-  Constant values internally used by the driver.
+ Constant values internally used by the driver.
  */
 #define CEP_MAX_PKT_SIZE                                64u
 #define SETUP_PKT_SIZE                                  8u
@@ -160,7 +161,7 @@ typedef enum {
     MSS_USB_EP_STALL_RCVD,
     MSS_USB_EP_XFR_SUCCESS,
     MSS_USB_EP_ABORTED
-#endif  /* MSS_USB_HOST_ENABLED */
+#endif  //MSS_USB_HOST_ENABLED
 
 } mss_usb_ep_state_t;
 
@@ -278,7 +279,7 @@ typedef struct {
     uint32_t                    interval;
     /*This index will be used to choose a particular connected device out of the
       Multiple connected devices when Multiple devices are supported.
-      Currently we support only one device hence this will always evaluate to 0*/
+      Currently we support only one device hence this will always evalueate to 0*/
     uint8_t                     tdev_idx;
 
 #endif  /* MSS_USB_HOST_ENABLED */
@@ -499,8 +500,7 @@ MSS_USB_CIF_rx_ep_configure
 );
 
 /*-------------------------------------------------------------------------*//**
-  Prepares the RX EP for receiving data as per parameters provided by upper 
-  layer
+  Prepares the RX EP for receiving data as per parameters provided by upper layer
  */
 void
 MSS_USB_CIF_rx_ep_read_prepare
