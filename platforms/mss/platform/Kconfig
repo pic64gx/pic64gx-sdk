@@ -1,5 +1,5 @@
 menu "MSS Drivers"  
-    depends on PLATFORM = mss
+    depends on PLATFORM_MSS
 
 config MSS_CAN
     bool
