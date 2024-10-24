@@ -39,6 +39,7 @@ def runCMake(sdk_base, workspace_base, board, args, regen=True):
             "-Wno-dev",
             f"-S {args.app_dir}",
             f"-B {args.build_dir}",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
         ]
     )
 
@@ -264,6 +265,7 @@ if __name__ == "__main__":
         "-d",
         "--build-dir",
         type=str,
+        default="build",
         help="the output build directory. defaults to nothing",
     )
 
