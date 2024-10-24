@@ -18,6 +18,8 @@ endif()
 list(APPEND PLATFORM_HEADERS
     ${CMAKE_SOURCE_DIR}/src/application/
     ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/drivers/
+    ${CMAKE_CURRENT_LIST_DIR}/drivers/mss/
     ${CMAKE_CURRENT_LIST_DIR}/pic64gx_hal/
     ${CMAKE_CURRENT_LIST_DIR}/pic64gx_hal/common/
     ${CMAKE_BINARY_DIR}/board/
