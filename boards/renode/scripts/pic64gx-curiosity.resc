@@ -1,7 +1,7 @@
-:name: Curiosity PIC64-GX
+:name: PIC64GX Curiosity Kit
 :description: This is a sample script prepared to create a Curiosity PIC64-GX board
 
-include @scripts/curiosity-pic64-platform.resc
+include @scripts/pic64gx-curiosity-platform.resc
 machine LoadPlatformDescriptionFromString 
 """
 gpio0: @ none

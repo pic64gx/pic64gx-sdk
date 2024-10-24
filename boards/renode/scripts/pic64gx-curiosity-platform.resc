@@ -8,7 +8,7 @@ logLevel 3
 using sysbus
 mach create
 
-machine LoadPlatformDescription @platforms/cpus/curiosity-pic64.repl
+machine LoadPlatformDescription @platforms/cpus/pic64gx-curiosity.repl
 
 machine LoadPlatformDescriptionFromString 
 """
