@@ -12,10 +12,9 @@ void e51(void)
     MSS_UART_115200_BAUD,
     MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
-
     /* Message on uart0 */
-    MSS_UART_polled_tx(&g_mss_uart0_lo, g_message,
-            sizeof(g_message));
+    MSS_UART_polled_tx(&g_mss_uart0_lo, g_message, sizeof(g_message));
+
     while (1U)
     {
 
