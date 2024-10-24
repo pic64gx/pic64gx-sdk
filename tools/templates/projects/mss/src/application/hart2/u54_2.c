@@ -1,8 +1,12 @@
-#include "mpfs_hal/mss_hal.h"
+#include "pic64gx_hal/mss_hal.h"
 
 void u54_2(void)
 {
-    while (1U)
+    clear_soft_interrupt();
+
+    set_csr(mie, MIP_MSIP);
+
+    while (1u)
     {
 
     }

@@ -79,12 +79,6 @@ def initSrc(dir, platform):
 def getPlatform(config):
     if "PLATFORM_MSS" in config:
         return "mss"
-    elif "PLATFORM_MIV" in config:
-        return "miv"
-    elif "PLATFORM_MPS" in config:
-        return "mps"
-    elif "PLATFORM_VPB" in config:
-        return "vpb"
     else:
         return None
 
@@ -100,6 +94,17 @@ def main(args):
         os.makedirs(f"{directory}", exist_ok=True)
 
     initProjConf(directory, args.config)
+
+    # Get the proj.conf template
+    with open(f"{os.environ['SDK_BASE']}/tools/templates/proj.conf", 'r') as source_file:
+        source_contents = source_file.read()
+
+    # Append proj.conf template to the application proj.conf
+    proj_config = os.path.join(directory,"proj.conf")
+
+    with open(proj_config, 'a') as destination_file:
+        destination_file.write(source_contents)
+
     initCMakeLists(directory, name, platform, add_src, add_inc)
     if platform:
         initSrc(directory, platform)
