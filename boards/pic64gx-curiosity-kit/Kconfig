@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-menu "MPFS HAL Configuration"
+menu "PIC64GX HAL Configuration"
     depends on PLATFORM_MSS
 config IMAGE_LOADED_BY_BOOTLOADER
     int
@@ -10,24 +10,24 @@ config IMAGE_LOADED_BY_BOOTLOADER
         We set IMAGE_LOADED_BY_BOOTLOADER = 0 if the application image runs from
         non-volatile memory after reset. (No previous stage bootloader is used.)
         Set IMAGE_LOADED_BY_BOOTLOADER = 1 if the application image is loaded
-        by a previous stage bootloader. MPFS_HAL_HW_CONFIG is defined if we are
+        by a previous stage bootloader. PIC64GX_HAL_HW_CONFIG is defined if we are
         a boot-loader. This is a conditional compile switch is used to determine
         if MPFS HAL will perform the hardware configurations or not.
         Defined => This program acts as a First stage bootloader and
                     performs hardware configurations.
         Not defined => This program assumes that the hardware configurations are
                         already performed (Typically by a previous boot stage)
-        List of items initialised when MPFS_HAL_HW_CONFIG is enabled
+        List of items initialised when PIC64GX_HAL_HW_CONFIG is enabled
         - load virtual rom (see load_virtual_rom(void) in system_startup.c)
         - l2 cache config
         - Bus error unit config
         - MPU config
         - pmp config
         - I/O, clock and clock mux's, DDR and SGMII
-        - will start other harts, see text describing MPFS_HAL_FIRST_HART,
-        MPFS_HAL_LAST_HART above
+        - will start other harts, see text describing PIC64GX_HAL_FIRST_HART,
+        PIC64GX_HAL_LAST_HART above
 
-config MPFS_HAL_SHARED_MEM_ENABLED
+config PIC64GX_HAL_SHARED_MEM_ENABLED
     bool
     prompt "Enable shared memory"
     default n
@@ -36,12 +36,12 @@ config MPFS_HAL_SHARED_MEM_ENABLED
         Make sure common memorry is allocated in the linker script.
         See app_hart_common mem section in the example platform linker script.
 
-config MPFS_HAL_FIRST_HART
+config PIC64GX_HAL_FIRST_HART
     int
     prompt "First HART to start"
     default 0
     help
-        MPFS_HAL_FIRST_HART and MPFS_HAL_LAST_HART defines are used to specify
+        PIC64GX_HAL_FIRST_HART and PIC64GX_HAL_LAST_HART defines are used to specify
         which harts to actually start. The value and the actual hart it 
         represents are listed below:
         value  hart
@@ -50,84 +50,27 @@ config MPFS_HAL_FIRST_HART
         2  U54_2
         3  U54_3
         4  U54_4
-        Set MPFS_HAL_FIRST_HART to a value greater than 0 if you do not want
+        Set PIC64GX_HAL_FIRST_HART to a value greater than 0 if you do not want
         your application to start and execute code on the harts represented by
-        smaller value numbers. Set MPFS_HAL_LAST_HART to a value smaller than 4
+        smaller value numbers. Set PIC64GX_HAL_LAST_HART to a value smaller than 4
         if you do not wish to use all U54_x harts.
         Harts that are not started will remain in an infinite WFI loop unless
         used through some other method.
-        The value of MPFS_HAL_FIRST_HART must always be less than
-        MPFS_HAL_LAST_HART. The value of MPFS_HAL_LAST_HART must never be 
+        The value of PIC64GX_HAL_FIRST_HART must always be less than
+        PIC64GX_HAL_LAST_HART. The value of PIC64GX_HAL_LAST_HART must never be 
         greater than 4.
-        A typical use-case where you set MPFS_HAL_FIRST_HART = 1 and
-        MPFS_HAL_LAST_HART = 1 is when
+        A typical use-case where you set PIC64GX_HAL_FIRST_HART = 1 and
+        PIC64GX_HAL_LAST_HART = 1 is when
         your application is running on U54_1 and a bootloader running on E51
         loads your application to the target memory and kicks-off U54_1 to run
         it.
 
-config MPFS_HAL_LAST_HART
+config PIC64GX_HAL_LAST_HART
     int
     prompt "Last HART to start"
     default 4
     help
-        see MPFS_HAL_FIRST_HART
-
-config HART0_TICK_RATE_MS
-    int
-    prompt "HART 0 tick rate in Miliseconds"
-    default 5
-    help
-        the required tick rate in Milliseconds.if this program is running on
-        one hart only, only that particular hart value
-        will be used
-
-config HART1_TICK_RATE_MS
-    int
-    prompt "HART 1 tick rate in Miliseconds"
-    default 5
-    help
-        the required tick rate in Milliseconds.if this program is running on
-        one hart only, only that particular hart value
-        will be used
-
-config HART2_TICK_RATE_MS
-    int
-    prompt "HART 2 tick rate in Miliseconds"
-    default 5
-    help
-        the required tick rate in Milliseconds.if this program is running on
-        one hart only, only that particular hart value
-        will be used
-
-config HART3_TICK_RATE_MS
-    int
-    prompt "HART 3 tick rate in Miliseconds"
-    default 5
-    help
-        the required tick rate in Milliseconds.if this program is running on
-        one hart only, only that particular hart value
-        will be used
-
-config HART4_TICK_RATE_MS
-    int
-    prompt "HART 4 tick rate in Miliseconds"
-    default 5
-    help
-        the required tick rate in Milliseconds.if this program is running on
-        one hart only, only that particular hart value
-        will be used
-
-config HLS_DEBUG_AREA_SIZE
-    int
-    prompt "HART Local Storage debug area size"
-    default 64
-    help
-        Define the size of the Hart Local Storage (HLS).
-        In the MPFS HAL, we are using HLS for debug data storage during the
-        initial boot phase.
-        This includes the flags which indicate the hart state regarding boot
-        state. The HLS will take memory from top of each stack allocated at 
-        boot time.
+        see PIC64GX_HAL_FIRST_HART
 
 config BEU_ENABLE
     int
@@ -153,16 +96,6 @@ config BEU_LOCAL_INT
         Configures which accrued events should generate a local interrupt to
         the hart on which the event accrued. (cp is this a typo?)
 
-config MPFS_HAL_CLEAR_MEMORY
-    int
-    prompt "Clear memory on startup"
-    default 1
-    help
-        Clear memory on startup
-        0 => do not clear DTIM and L2
-        1 => Clears memory
-        Note: If you are the zero stage bootloader, set this to one.
-
 config SGMII_SUPPORT
     bool
     prompt "SGMII support" 
@@ -177,77 +110,5 @@ config MSSIO_SUPPORT
     bool
     prompt "MSSIO support"
     default y
-
-config MICROCHIP_STDIO_SUPPORT
-    bool
-    prompt "STDIO support for mmuart"
-    help
-        Redirection of standard output to an MSS UART.
-
-        A default implementation for the redirection of the output of printf() to a
-        UART is provided at the bottom of this file. This redirection is enabled by
-        adding one of the following:
-
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart0_lo
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart1_lo
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart2_lo
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart3_lo
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart4_lo
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart0_hi
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart1_hi
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart2_hi
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart3_hi
-        MICROCHIP_STDIO_THRU_MMUARTX &g_mss_uart4_hi
-
-        The baud rate using the MICROCHIP_STDIO_BAUD_RATE define.
-        Note: you must have mss_mmuart driver source code included in the project.
-    default n
-
-
-config MICROCHIP_STDIO_BAUD_RATE
-    string
-    prompt "MICROCHIP STDIO BAUD RATE"
-    default MSS_UART_115200_BAUD
-    depends on MICROCHIP_STDIO_THRU_MMUARTX
-
-
-config CONFIG_DEBUG_DDR_INIT
-bool
-prompt "Debug DDR startup through a UART"
-help
-    Debug DDR startup through a UART
-    Comment out in normal operation. May be useful for debug purposes in
-    bring-up of a new board design. See the weakly linked function
-    setup_ddr_debug_port(mss_uart_instance_t * uart) If you need to edit
-    this function, make another copy of the function in your
-    application without the weak linking attribute. This copy will then get
-    linked.
-default n
-
-config DEBUG_DDR_RD_RW_FAIL
-    bool
-    prompt "Debug DDR read/ write fail"
-    default n
-    depends on CONFIG_DEBUG_DDR_INIT
-
-config DEBUG_DDR_RD_RW_PASS
-    bool
-    prompt "Debug DDR read/ write pass"
-    default n
-    depends on CONFIG_DEBUG_DDR_INIT
-
-
-config DEBUG_DDR_CFG_DDR_SGMII_PHY
-    bool
-    prompt "Debug DDR configure DDR SGMII PHY"
-    default n
-    depends on CONFIG_DEBUG_DDR_INIT
-
-
-config DEBUG_DDR_DDRCFG
-    bool
-    prompt "Debug DDR configure DDR"
-    default n
-    depends on CONFIG_DEBUG_DDR_INIT
 
 endmenu

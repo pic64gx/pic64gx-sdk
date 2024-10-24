@@ -2,7 +2,7 @@
 
 menu "Boards Software Configuration"
 
-source 'boards/curiosity-pic64-gx/Kconfig'
+source 'boards/pic64gx-curiosity-kit/Kconfig'
 
 endmenu
 
@@ -31,120 +31,4 @@ config APPLICATION_RAM_SIZE
     prompt "Set the length of the RAM"
     default 32768
 
-config LINKER_ENTRY_LOCATION
-    string
-    prompt "Choose the memory location for .entry"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the entry section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_TEXT_LOCATION
-    string
-    prompt "Choose the memory location for .text"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the text section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_SDATA_LOCATION
-    string
-    prompt "Choose the memory location for .sdata"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the sdata section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_DATA_LOCATION
-    string
-    prompt "Choose the memory location for .data"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the data section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_SBSS_LOCATION
-    string
-    prompt "Choose the memory location for .sbss"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the sbss section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_BSS_LOCATION
-    string
-    prompt "Choose the memory location for .bss"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the bss section. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_STACK_LOCATION
-    string
-    prompt "Choose the memory location for .stack"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the stack. 
-        Possible values: itim, fabric, vsram, ddr
-
-config LINKER_HEAP_LOCATION
-    string
-    prompt "Choose the memory location for .heap"
-    default "vsram" if PLATFORM_VPB
-    help
-        Choose the target memory location for the heap. 
-        Possible values: itim, fabric, vsram, ddr
-
-endmenu
-
-menu "Console Output Settings"
-
-config MICROCHIP_STDIO_SUPPORT
-    bool
-    prompt "STDIO support for uart"
-    help
-        Redirection of standard output to a UART.
-
-        A default implementation for the redirection of the output of
-        printf() to a UART.
-    default n
-
-choice REDIRECT_STDIO_TO_MMUART_X
-    depends on PLATFORM_MSS && MICROCHIP_STDIO_SUPPORT
-    bool
-    prompt "Choose the UART you want to redirect STDIO to"
-    help
-       This allows a user to redirect printf to a UART.
-    default MMUART_0_LOW_STDIO
-
-    config MMUART_0_LOW_STDIO
-        bool "Redirect STDIO to MMUART 0 (Low Address Range)"
-
-    config MMUART_1_LOW_STDIO
-        bool "Redirect STDIO to MMUART 1 (Low Address Range)"
-
-    config MMUART_2_LOW_STDIO
-        bool "Redirect STDIO to MMUART 2 (Low Address Range)"
-
-    config MMUART_3_LOW_STDIO
-        bool "Redirect STDIO to MMUART 3 (Low Address Range)"
-
-    config MMUART_4_LOW_STDIO
-        bool "Redirect STDIO to MMUART 4 (Low Address Range)"
-
-    config MMUART_0_HIGH_STDIO
-        bool "Redirect STDIO to MMUART 0 (High Address Range)"
-
-    config MMUART_1_HIGH_STDIO
-        bool "Redirect STDIO to MMUART 1 (High Address Range)"
-
-    config MMUART_2_HIGH_STDIO
-        bool "Redirect STDIO to MMUART 2 (High Address Range)"
-
-    config MMUART_3_HIGH_STDIO
-        bool "Redirect STDIO to MMUART 3 (High Address Range)"
-
-    config MMUART_4_HIGH_STDIO
-        bool "Redirect STDIO to MMUART 4 (High Address Range)"
-endchoice
 endmenu

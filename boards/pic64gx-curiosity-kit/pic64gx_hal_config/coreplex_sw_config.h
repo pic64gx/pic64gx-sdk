@@ -34,6 +34,7 @@
     @section
 
 *//*==========================================================================*/
+#include "autoconf.h"
 
 /*
  * Include any driver setup/over-rides you may require.
@@ -41,14 +42,15 @@
 //#include "drivers/coreplex/miv_ihc/miv_ihc_defines.h"
 //#include "drivers_config/coreplex/miv_ihc/miv_ihc_config.h"
 
-#define PIC64GX_HAL_FIRST_HART  1
-#define PIC64GX_HAL_LAST_HART   4
+#define PIC64GX_HAL_FIRST_HART  CONFIG_PIC64GX_HAL_FIRST_HART
+#define PIC64GX_HAL_LAST_HART   CONFIG_PIC64GX_HAL_LAST_HART
 
+#ifdef CONFIG_IMAGE_LOADED_BY_BOOTLOADER
 #define IMAGE_LOADED_BY_BOOTLOADER 0
 #if (IMAGE_LOADED_BY_BOOTLOADER == 0)
 #define PIC64GX_HAL_HW_CONFIG
 #endif
-
+#endif
 /*------------------------------------------------------------------------------
  * Markers used to indicate startup status of hart
  */
@@ -62,9 +64,9 @@
  * See app_hart_common mem section in the example platform
  * linker scripts.
  */
-
-//#define PIC64GX_HAL_SHARED_MEM_ENABLED
-
+#if CONFIG_PIC64GX_HAL_SHARED_MEM_ENABLED
+#define PIC64GX_HAL_SHARED_MEM_ENABLED
+#endif
 
 /* define the required tick rate in Milliseconds */
 /* if this program is running on one hart only, only that particular hart value
@@ -94,9 +96,9 @@
  * BEU_LOCAL_INT => Configures which accrued events should generate a
  *                 local interrupt to the hart on which the event accrued.
  */
-#define BEU_ENABLE                  0x0ULL
-#define BEU_PLIC_INT                0x0ULL
-#define BEU_LOCAL_INT               0x0ULL
+#define BEU_ENABLE        CONFIG_BEU_ENABLE
+#define BEU_PLIC_INT      CONFIG_BEU_PLIC_INT
+#define BEU_LOCAL_INT     CONFIG_BEU_LOCAL_INT
 
 /*
  * Clear memory on startup
@@ -115,9 +117,17 @@
  * by MSS configurator settings, and items are enabled/disabled by this method.
  * The reason you may want to use below is to save code space.
  */
+#if CONFIG_SGMII_SUPPORT
 #define SGMII_SUPPORT
+#endif
+
+#if CONFIG_DDR_SUPPORT
 #define DDR_SUPPORT
+#endif
+
+#if CONFIG_MSSIO_SUPPORT
 #define MSSIO_SUPPORT
+#endif
 
 /*
  * Debugging IHC. This placed memory map in volatile memory and uses software
@@ -140,7 +150,7 @@
  * OpenSBI type definitions conflict with pic64gx_hal
  * so we need to undefine CONFIG_OPENSBI after including config.h
  */
-#include "autoconf.h"
+
 #undef CONFIG_OPENSBI
 
 #ifdef CONFIG_SERVICE_MMC_MMC_SD_EMMC_DEMUX_SELECT_ADDRESS
