@@ -5,8 +5,7 @@
 This guide walks you through using the PIC64GX Configurator to create and manage AMP memory configurations, peripherals, and device tree overlays for Microchip PIC64GX platform, supporting both Zephyr and Linux environments.
 
 **Prefer a guided step-by-step walkthrough example flow?**  
-For a complete and specific example flow (project creation → AMP configuration → generated outputs), see:  [**PIC64GX Configurator – Example User Flow**](./example-configuration-flow.md)
-
+For a complete and specific example flow configuration using Yocto (project creation → AMP configuration → generated outputs), see: [**PIC64GX Configurator - AMP Configuration Example**](./AMP-configuration-example.md)
 
 
 ## Prerequisites
